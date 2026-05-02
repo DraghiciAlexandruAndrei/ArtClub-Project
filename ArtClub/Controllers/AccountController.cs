@@ -1,42 +1,62 @@
 ﻿using ArtClub.Models.ViewModels;
-using ArtClub.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 
 namespace ArtClub.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IUserService _userService;
+        public IActionResult Index() => View("Index");
 
-        public AccountController(IUserService userService)
+        public IActionResult Login() => View("Index");
+
+        [HttpPost]
+        public IActionResult Login(LoginViewModel model)
         {
-            _userService = userService;
+            if (!ModelState.IsValid) return View("Index", model);
+            TempData["StatusMessage"] = "Login completed. Sample role dashboard opened.";
+            return RedirectToAction(nameof(Dashboard));
         }
 
-        [AllowAnonymous]
-        public IActionResult Login() => View();
+        public IActionResult Register() => View("Create");
 
-        [HttpPost, AllowAnonymous]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        [HttpPost]
+        public IActionResult Register(RegisterViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
-            var success = await _userService.AuthenticateAsync(model.Email, model.Password);
-            return success ? RedirectToAction("Index", "Home") : View(model);
+            if (!ModelState.IsValid) return View("Create", model);
+            TempData["StatusMessage"] = "Registration completed. Welcome to the club.";
+            return RedirectToAction(nameof(Dashboard));
         }
 
-        [AllowAnonymous]
-        public IActionResult Register() => View();
-
-        [HttpPost, AllowAnonymous]
-        public async Task<IActionResult> Register(RegisterViewModel model)
+        public IActionResult Dashboard()
         {
-            if (!ModelState.IsValid) return View(model);
-            // Aici s-ar apela serviciul de creare user
-            return RedirectToAction("Login");
+            var model = new AccountDashboardViewModel
+            {
+                DisplayName = "Guest Member",
+                CurrentRole = "Member",
+                MembershipStatus = "Active",
+                Email = "member@artclub.local",
+                Notifications = new List<string>
+                {
+                    "Invitation received for Summer Exhibition.",
+                    "Your profile is up to date.",
+                    "Membership fee is valid for this month."
+                },
+                QuickActions = new List<string>
+                {
+                    "Create event",
+                    "Reserve resource",
+                    "Open invitation inbox",
+                    "View club reports"
+                }
+            };
+
+            return View(model);
         }
 
-        [Authorize]
-        public async Task<IActionResult> Logout() => RedirectToAction("Login");
+        public IActionResult Logout()
+        {
+            TempData["StatusMessage"] = "You have been signed out.";
+            return RedirectToAction("Index", "Home");
+        }
     }
 }

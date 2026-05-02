@@ -1,0 +1,28 @@
+@model ArtClub.Models.ViewModels.ArtPieceDetailsViewModel
+@{
+    ViewData["Title"] = "Art Piece Details";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h1 class="h3">@Model?.Title</h1>
+        <p class="text-muted">Creator: @Model?.Creator</p>
+        <p>@Model?.Description</p>
+        <p><strong>Last updated:</strong> @Model?.LastUpdated</p>
+
+        <h2 class="h5 mt-4">Associated events</h2>
+        @if (Model?.AssociatedEvents?.Any() == true)
+        {
+            <ul>
+                @foreach (var item in Model.AssociatedEvents)
+                {
+                    <li>@item</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="text-muted mb-0">No associated events are available.</p>
+        }
+    </div>
+</div>

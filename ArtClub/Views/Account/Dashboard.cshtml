@@ -1,0 +1,58 @@
+@model ArtClub.Models.ViewModels.AccountDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h1 class="h4">@Model?.DisplayName</h1>
+                <p class="text-muted mb-1">Role: @Model?.CurrentRole</p>
+                <p class="text-muted mb-1">Membership: @Model?.MembershipStatus</p>
+                <p class="text-muted">Email: @Model?.Email</p>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to Home</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Quick actions</h2>
+                @if (Model?.QuickActions?.Any() == true)
+                {
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var action in Model.QuickActions)
+                        {
+                            <li class="mb-2">• @action</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No actions available.</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Notifications</h2>
+                @if (Model?.Notifications?.Any() == true)
+                {
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var notification in Model.Notifications)
+                        {
+                            <li class="mb-2">• @notification</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">No notifications available.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
