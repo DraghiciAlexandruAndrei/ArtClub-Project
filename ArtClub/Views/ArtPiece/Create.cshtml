@@ -1,6 +1,56 @@
-﻿@{
+﻿@model ArtClub.Models.Entities.ArtPiece
+
+@{
     ViewData["Title"] = "Create art piece";
 }
 
-<h1>Create art piece</h1>
-<p>This page will be used to add a new art piece to the club collection.</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1>Create art piece</h1>
+        <p class="text-muted mb-0">Add a new piece to the club collection.</p>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary">Back to collection</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="col-12">
+                <label asp-for="Title" class="form-label">Title</label>
+                <input asp-for="Title" class="form-control" placeholder="Example: Sunlit Studio" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="col-12">
+                <label asp-for="Creator" class="form-label">Creator</label>
+                <input asp-for="Creator" class="form-control" placeholder="Example: A. Ionescu" />
+                <span asp-validation-for="Creator" class="text-danger"></span>
+            </div>
+
+            <div class="col-12">
+                <label asp-for="ImageUrl" class="form-label">Image URL</label>
+                <input asp-for="ImageUrl" class="form-control" placeholder="Example: https://example.com/image.jpg" />
+                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 form-check ms-2">
+                <input asp-for="IsPopular" class="form-check-input" />
+                <label asp-for="IsPopular" class="form-check-label">Mark as popular</label>
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Save art piece</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,17 +1,22 @@
 ﻿@model IEnumerable<ArtClub.Models.ViewModels.ArtPieceListViewModel>
+
 @{
-    ViewData["Title"] = "Art Pieces";
+    ViewData["Title"] = "Art pieces";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
-        <h1>Art Pieces</h1>
-        <p class="text-muted mb-0">Browse the club collection and open detailed art piece pages.</p>
+        <h1>Art pieces</h1>
+        <p class="text-muted mb-0">Browse and manage the club art collection.</p>
     </div>
-    <a asp-action="Popular" class="btn btn-outline-primary">Popular pieces</a>
+
+    <div>
+        <a asp-action="Popular" class="btn btn-outline-secondary">Popular pieces</a>
+        <a asp-action="Create" class="btn btn-primary">Add art piece</a>
+    </div>
 </div>
 
-@if (Model?.Any() == true)
+@if (Model != null && Model.Any())
 {
     <div class="row g-3">
         @foreach (var piece in Model)
@@ -20,9 +25,15 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <h2 class="h5">@piece.Title</h2>
-                        <p class="mb-1"><strong>Artist:</strong> @piece.ArtistName</p>
-                        <p class="mb-3"><strong>Style:</strong> @piece.Style</p>
-                        <a asp-action="Details" asp-route-id="@piece.Id" class="btn btn-sm btn-primary">View details</a>
+
+                        <p class="mb-1"><strong>Creator:</strong> @piece.ArtistName</p>
+                        <p class="mb-3"><strong>Status:</strong> @piece.Style</p>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a asp-action="Details" asp-route-id="@piece.Id" class="btn btn-sm btn-outline-primary">Details</a>
+                            <a asp-action="Edit" asp-route-id="@piece.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@piece.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -31,5 +42,7 @@
 }
 else
 {
-    <div class="alert alert-secondary">No art pieces are available yet.</div>
+    <div class="alert alert-secondary">
+        No art pieces are available yet.
+    </div>
 }

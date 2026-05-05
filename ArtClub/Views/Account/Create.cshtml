@@ -1,9 +1,9 @@
 ﻿@model ArtClub.Models.ViewModels.RegisterViewModel
+
 @{
     ViewData["Title"] = "Register";
 }
 
-@* Updated placeholder UI for ArtClub v0.3. *@
 <div class="row justify-content-center">
     <div class="col-lg-8">
         <div class="card shadow-sm">
@@ -11,36 +11,44 @@
                 <h1 class="h3 mb-3">Create account</h1>
                 <p class="text-muted">Register a member account to access the club management features.</p>
 
-                <form asp-action="Register" method="post" class="row g-3">
+                <form asp-controller="Account" asp-action="Register" method="post" class="row g-3">
+                    @Html.AntiForgeryToken()
+
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
                     <div class="col-md-6">
                         <label asp-for="FirstName" class="form-label"></label>
                         <input asp-for="FirstName" class="form-control" />
                         <span asp-validation-for="FirstName" class="text-danger"></span>
                     </div>
+
                     <div class="col-md-6">
                         <label asp-for="LastName" class="form-label"></label>
                         <input asp-for="LastName" class="form-control" />
                         <span asp-validation-for="LastName" class="text-danger"></span>
                     </div>
+
                     <div class="col-12">
                         <label asp-for="Email" class="form-label"></label>
                         <input asp-for="Email" class="form-control" placeholder="name@example.com" />
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
+
                     <div class="col-md-6">
                         <label asp-for="Password" class="form-label"></label>
                         <input asp-for="Password" type="password" class="form-control" />
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
+
                     <div class="col-md-6">
                         <label asp-for="ConfirmPassword" class="form-label"></label>
                         <input asp-for="ConfirmPassword" type="password" class="form-control" />
                         <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                     </div>
+
                     <div class="col-12 d-flex gap-2">
                         <button type="submit" class="btn btn-primary">Register</button>
-                        <a asp-action="Login" class="btn btn-outline-secondary">Back to login</a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-secondary">Back to login</a>
                     </div>
                 </form>
             </div>

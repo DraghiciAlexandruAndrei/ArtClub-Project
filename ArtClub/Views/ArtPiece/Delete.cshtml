@@ -1,9 +1,38 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model ArtClub.Models.Entities.ArtPiece
+
 @{
     ViewData["Title"] = "Delete art piece";
 }
 
-<h1>Delete art piece</h1>
-<p>Confirm the deletion of the selected art piece here.</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1>Delete art piece</h1>
+        <p class="text-muted mb-0">Confirm removal of this art piece from the collection.</p>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary">Back to collection</a>
+</div>
+
+<div class="alert alert-danger">
+    <strong>Warning:</strong> This action will delete the selected art piece.
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h2 class="h5">@Model.Title</h2>
+
+        <p class="mb-1"><strong>Creator:</strong> @Model.Creator</p>
+        <p class="mb-1"><strong>Image URL:</strong> @Model.ImageUrl</p>
+        <p class="mb-0"><strong>Status:</strong> @(Model.IsPopular ? "Popular" : "Standard")</p>
+    </div>
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <button type="submit" class="btn btn-danger">Delete art piece</button>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">View details</a>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
