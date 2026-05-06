@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ArtClub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260506151023_InitialIdentitySetup")]
-    partial class InitialIdentitySetup
+    [Migration("20260506190615_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

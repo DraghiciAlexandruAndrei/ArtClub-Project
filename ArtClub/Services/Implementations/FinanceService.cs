@@ -106,8 +106,8 @@ namespace ArtClub.Services.Implementations
             {
                 var page = document.AddPage();
                 var gfx = XGraphics.FromPdfPage(page);
-                var fontTitle = new XFont("Verdana", 20, XFontStyleEx.Bold);
-                var fontText = new XFont("Verdana", 12, XFontStyleEx.Regular);
+                var fontTitle = new XFont("Arial", 20, XFontStyleEx.Bold);
+                var fontText = new XFont("Arial", 12, XFontStyleEx.Regular);
 
                 gfx.DrawString($"Raport Financiar {month}/{year}", fontTitle, XBrushes.Black, new XRect(0, 40, page.Width, 40), XStringFormats.Center);
 

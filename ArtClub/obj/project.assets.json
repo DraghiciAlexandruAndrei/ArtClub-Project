@@ -38,6 +38,19 @@
           }
         }
       },
+      "BitMiracle.LibTiff.NET/2.3.642": {
+        "type": "package",
+        "compile": {
+          "lib/net20/BitMiracle.LibTiff.NET.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net20/BitMiracle.LibTiff.NET.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Humanizer.Core/2.14.1": {
         "type": "package",
         "compile": {
@@ -1086,6 +1099,19 @@
           }
         }
       },
+      "PDFSharp.Extensions/0.1.2.2": {
+        "type": "package",
+        "dependencies": {
+          "BitMiracle.LibTiff.NET": "2.3.642",
+          "PdfSharp": "1.32.3057"
+        },
+        "compile": {
+          "lib/net40/PDFSharp.Extensions.dll": {}
+        },
+        "runtime": {
+          "lib/net40/PDFSharp.Extensions.dll": {}
+        }
+      },
       "SQLitePCLRaw.bundle_e_sqlite3/2.1.11": {
         "type": "package",
         "dependencies": {
@@ -1499,6 +1525,19 @@
         "lib/net8.0/Azure.Identity.xml",
         "lib/netstandard2.0/Azure.Identity.dll",
         "lib/netstandard2.0/Azure.Identity.xml"
+      ]
+    },
+    "BitMiracle.LibTiff.NET/2.3.642": {
+      "sha512": "UzVr5HEIfgCECwRaEMEFc5M5kyEsKnvTx1G5vVKDXBvLTBTk9hD6Pj3ZlTC++UvPoblyz/NuXocKbmPC9wUnlQ==",
+      "type": "package",
+      "path": "bitmiracle.libtiff.net/2.3.642",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "bitmiracle.libtiff.net.2.3.642.nupkg.sha512",
+        "bitmiracle.libtiff.net.nuspec",
+        "lib/net20/BitMiracle.LibTiff.NET.dll",
+        "lib/net20/BitMiracle.LibTiff.NET.xml"
       ]
     },
     "Humanizer.Core/2.14.1": {
@@ -3558,6 +3597,18 @@
         "pdfsharp.nuspec"
       ]
     },
+    "PDFSharp.Extensions/0.1.2.2": {
+      "sha512": "d+eTsdJvFdiiKkEpw/McxlfI2cneA+Q++95oyrj8z/BjlqlYaC4Axe/OVu0AAhE0azhUE3fV4aNA13dT732wSQ==",
+      "type": "package",
+      "path": "pdfsharp.extensions/0.1.2.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net40/PDFSharp.Extensions.dll",
+        "pdfsharp.extensions.0.1.2.2.nupkg.sha512",
+        "pdfsharp.extensions.nuspec"
+      ]
+    },
     "SQLitePCLRaw.bundle_e_sqlite3/2.1.11": {
       "sha512": "DC4nA7yWnf4UZdgJDF+9Mus4/cb0Y3Sfgi3gDnAoKNAIBwzkskNAbNbyu+u4atT0ruVlZNJfwZmwiEwE5oz9LQ==",
       "type": "package",
@@ -4022,7 +4073,8 @@
       "Microsoft.EntityFrameworkCore.Sqlite >= 10.0.7",
       "Microsoft.EntityFrameworkCore.Sqlite.Core >= 10.0.7",
       "Microsoft.EntityFrameworkCore.Tools >= 10.0.7",
-      "PDFsharp >= 6.2.4"
+      "PDFsharp >= 6.2.4",
+      "PdfSharp.Extensions >= 0.1.2.2"
     ]
   },
   "packageFolders": {
@@ -4140,6 +4192,10 @@
           "PDFsharp": {
             "target": "Package",
             "version": "[6.2.4, )"
+          },
+          "PdfSharp.Extensions": {
+            "target": "Package",
+            "version": "[0.1.2.2, )"
           }
         },
         "imports": [
@@ -4578,5 +4634,27 @@
         }
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'BitMiracle.LibTiff.NET 2.3.642' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net10.0'. This package may not be fully compatible with your project.",
+      "libraryId": "BitMiracle.LibTiff.NET",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    },
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'PDFSharp.Extensions 0.1.2.2' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net10.0'. This package may not be fully compatible with your project.",
+      "libraryId": "PDFSharp.Extensions",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    }
+  ]
 }

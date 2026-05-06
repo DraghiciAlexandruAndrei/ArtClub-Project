@@ -6,7 +6,11 @@ using ArtClub.Services;
 using ArtClub.Services.Implementations;
 using ArtClub.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using PdfSharp.Fonts;
+using PdfSharp.Snippets.Font;
+using ArtClub.Services.Helpers;
 
+GlobalFontSettings.FontResolver = new FileFontResolver();
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Configurare Bază de Date (Entity Framework)

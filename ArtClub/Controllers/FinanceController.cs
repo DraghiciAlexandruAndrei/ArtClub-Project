@@ -2,6 +2,7 @@
 using ArtClub.Models.Enums;
 using ArtClub.Models.ViewModels;
 using ArtClub.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ArtClub.Controllers
@@ -9,10 +10,12 @@ namespace ArtClub.Controllers
     public class FinanceController : Controller
     {
         private readonly IFinanceService _financeService;
+        private readonly UserManager<User> _userManager;
 
-        public FinanceController(IFinanceService financeService)
+        public FinanceController(IFinanceService financeService, UserManager<User> userManager)
         {
             _financeService = financeService;
+            _userManager = userManager;
         }
 
         public IActionResult Index()
@@ -59,45 +62,38 @@ namespace ArtClub.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        
         public async Task<IActionResult> Create(decimal amount, DateTime date, bool isIncome)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
+            // Extrage ID-ul ca string
+            var userIdString = _userManager.GetUserId(User);
 
-            if (userId == null)
+            if (string.IsNullOrEmpty(userIdString))
             {
-                ModelState.AddModelError("", "You must be logged in to create a payment.");
-                return View(new Payment
-                {
-                    Amount = amount,
-                    Date = date,
-                    IsIncome = isIncome
-                });
+                ModelState.AddModelError("", "Utilizatorul nu a fost găsit.");
+                return View();
             }
 
-            if (amount <= 0)
-            {
-                ModelState.AddModelError("Amount", "Amount must be greater than 0.");
-                return View(new Payment
-                {
-                    Amount = amount,
-                    Date = date,
-                    IsIncome = isIncome
-                });
-            }
+            // Convertește-l la int (pentru că User-ul tău e IdentityUser<int>)
+            int userIdNumeric = int.Parse(userIdString);
 
             var payment = new Payment
             {
-                UserId = userId.Value,
+                UserId = userIdNumeric, // <--- Aceasta este linia critică
                 Amount = amount,
                 Date = date,
                 IsIncome = isIncome,
-                Type = isIncome ? PaymentType.Subscription : PaymentType.Expense
+                Type = isIncome ? PaymentType.Subscription : PaymentType.Expense,
+                Description = isIncome ? "Venit nou" : "Cheltuială nouă" // Asigură-te că și Description are o valoare dacă e NOT NULL
             };
 
-            await _financeService.CreatePaymentAsync(payment);
+            if (ModelState.IsValid)
+            {
+                await _financeService.CreatePaymentAsync(payment);
+                return RedirectToAction(nameof(Payments));
+            }
 
-            TempData["StatusMessage"] = "Payment created successfully.";
-            return RedirectToAction(nameof(Payments));
+            return View(payment);
         }
 
         public async Task<IActionResult> Edit(int id)
