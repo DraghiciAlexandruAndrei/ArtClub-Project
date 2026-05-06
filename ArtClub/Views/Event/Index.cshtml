@@ -1,4 +1,5 @@
-﻿@model IEnumerable<ArtClub.Models.ViewModels.EventSummaryViewModel>
+@model IEnumerable<ArtClub.Models.ViewModels.EventSummaryViewModel>
+
 @{
     ViewData["Title"] = "Events";
 }
@@ -10,6 +11,11 @@
     </div>
     <a asp-action="Create" class="btn btn-primary">Create event</a>
 </div>
+
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["StatusMessage"]</div>
+}
 
 @if (Model?.Any() == true)
 {
@@ -23,8 +29,28 @@
                         <p class="mb-1"><strong>Organizer:</strong> @item.OrganizerName</p>
                         <p class="mb-1"><strong>Resource:</strong> @item.ResourceName</p>
                         <p class="mb-1"><strong>Date:</strong> @item.StartDate.ToString("dd MMM yyyy")</p>
+                        <p class="mb-1"><strong>Invites:</strong> @item.InviteCount</p>
                         <p class="mb-3"><strong>Status:</strong> @item.Status</p>
-                        <a asp-action="Details" asp-route-id="1" class="btn btn-sm btn-outline-primary">Open details</a>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a asp-action="Details"
+                               asp-route-title="@item.Title"
+                               class="btn btn-sm btn-outline-primary">
+                                Details
+                            </a>
+
+                            <a asp-action="Edit"
+                               asp-route-title="@item.Title"
+                               class="btn btn-sm btn-outline-warning">
+                                Edit
+                            </a>
+
+                            <a asp-action="Delete"
+                               asp-route-title="@item.Title"
+                               class="btn btn-sm btn-outline-danger">
+                                Delete
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
