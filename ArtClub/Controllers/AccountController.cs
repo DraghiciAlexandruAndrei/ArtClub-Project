@@ -305,6 +305,49 @@ namespace ArtClub.Controllers
             TempData["ErrorMessage"] = "Eroare la ștergere: " + string.Join(", ", result.Errors.Select(e => e.Description));
             return RedirectToAction(nameof(Index));
         }
+
+        //Dashboard pentru membri
+        [Authorize]
+        public async Task<IActionResult> Dashboard()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            // Preluăm evenimentele organizate
+            var organized = await _eventService.GetEventsByOrganizerIdAsync(user.Id.ToString());
+
+            // Preluăm invitațiile (folosind serviciul tău)
+            var invitations = await _invitationService.GetUserInboxAsync(user.Id);
+
+            var model = new MemberDashboardViewModel
+            {
+                UserName = user.UserName,
+                IsMembershipActive = user.IsMembershipActive,
+                RemainingEventLimit = user.EventCreationLimit - organized.Count(e => e.Reservation?.StartTime > DateTime.Now),
+                EventsOrganizedCount = organized.Count,
+                PendingInvitationsCount = invitations.Count(i => i.Status == InvitationStatus.Pending),
+
+                RecentInvitations = invitations.Where(i => i.Status == InvitationStatus.Pending)
+                    .Take(3)
+                    .Select(i => new InvitationInboxViewModel
+                    {
+                        InvitationId = i.Id,
+                        EventTitle = i.Event?.Title,
+                        OrganizerName = i.Event?.Organizer?.UserName,
+                        EventDate = i.Event?.Reservation?.StartTime ?? DateTime.Now
+                    }).ToList(),
+
+                UpcomingEvents = organized.Where(e => e.Reservation?.StartTime > DateTime.Now)
+                    .Select(e => new EventSummaryViewModel
+                    {
+                        Title = e.Title,
+                        StartDate = e.Reservation?.StartTime ?? DateTime.Now,
+                        ResourceName = e.Resource?.Name
+                    }).ToList()
+            };
+
+            return View(model);
+        }
     }
 
 }
