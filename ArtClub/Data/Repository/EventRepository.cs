@@ -14,10 +14,18 @@ namespace ArtClub.DataAccess.Repositories
                                  .Include(e => e.Invitations).Include(e => e.Organizer)
                                  .OrderBy(e => e.Reservation.StartTime).ToListAsync();
 
-        public async Task<Event?> GetByTitleWithDetailsAsync(string title) =>
-            await _context.Events.Include(e => e.Resource).Include(e => e.Reservation)
-                                 .Include(e => e.Invitations).Include(e => e.Organizer)
-                                 .FirstOrDefaultAsync(e => e.Title == title);
+        public async Task<Event?> GetByTitleWithDetailsAsync(string title)
+        {
+            return await _context.Events
+                .Include(e => e.Organizer)
+                .Include(e => e.Resource)
+                .Include(e => e.Reservation)
+                .Include(e => e.EventArtPieces)      // Pas 1: Include tabelul de legătură
+                    .ThenInclude(eap => eap.ArtPiece) // Pas 2: Include obiectul ArtPiece real
+                .Include(e => e.Invitations)
+                    .ThenInclude(i => i.Invitee)
+                .FirstOrDefaultAsync(e => e.Title == title);
+        }
 
         public async Task<Event?> GetByIdWithReservationAsync(int id) =>
             await _context.Events.Include(e => e.Reservation).FirstOrDefaultAsync(e => e.Id == id);

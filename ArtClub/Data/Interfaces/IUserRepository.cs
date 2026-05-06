@@ -10,6 +10,7 @@ namespace ArtClub.DataAccess.Interfaces
         Task<List<User>> GetAllOrderedByNameAsync();
         Task AddAsync(User user);
         void Remove(User user);
+        Task UpdateAsync(User user);
         Task<bool> SaveChangesAsync();
     }
 }

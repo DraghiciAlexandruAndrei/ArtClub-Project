@@ -1,6 +1,72 @@
-﻿@{
-    ViewData["Title"] = "Delete event";
-}
+﻿@model ArtClub.Models.ViewModels.EventDetailsViewModel
 
-<h1>Delete event</h1>
-<p>Confirm the deletion of the selected event here.</p>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger shadow">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirmare Ștergere</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead text-center">Ești sigur că dorești să ștergi acest eveniment? Această acțiune este <strong>ireversibilă</strong>.</p>
+
+                    <div class="alert alert-secondary">
+                        <h5 class="border-bottom pb-2">Detalii Eveniment</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Titlu:</dt>
+                            <dd class="col-sm-8">@Model.Title</dd>
+
+                            <dt class="col-sm-4">Organizator:</dt>
+                            <dd class="col-sm-8">@Model.OrganizerName</dd>
+
+                            <dt class="col-sm-4">Locație:</dt>
+                            <dd class="col-sm-8">@Model.ResourceName</dd>
+
+                            <dt class="col-sm-4">Data:</dt>
+                            <dd class="col-sm-8">@Model.Date.ToString("dd MMM yyyy HH:mm")</dd>
+
+                            <dt class="col-sm-4 text-danger">Cost estimat:</dt>
+                            <dd class="col-sm-8 text-danger font-weight-bold">@Model.TotalCost lei</dd>
+                        </dl>
+                    </div>
+
+                    @if (Model.Invitations != null && Model.Invitations.Any())
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-info-circle"></i> <strong>Atenție:</strong> Există deja <strong>@Model.Invitations.Count</strong> invitații trimise. Ștergerea evenimentului va anula automat toate aceste invitații.
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Details" asp-route-title="@Model.Title" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Anulează (Înapoi la Detalii)
+                        </a>
+
+                        <form asp-action="DeleteConfirmed" method="post">
+                            @* Folosim titlul ca identificator conform rutei tale *@
+                            <input type="hidden" name="title" value="@Model.Title" />
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="bi bi-trash"></i> Șterge Definitiv
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-footer text-muted small text-center">
+                    Creat conform cerințelor de gestiune a bazei de date ArtClub.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Opțional: O a doua confirmare browser-side pentru siguranță
+        document.querySelector('form').addEventListener('submit', function (e) {
+            if (!confirm("Ești absolut sigur? Datele financiare asociate vor fi arhivate sau șterse.")) {
+                e.preventDefault();
+            }
+        });
+    </script>
+}

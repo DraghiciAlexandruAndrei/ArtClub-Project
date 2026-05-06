@@ -14,6 +14,10 @@ namespace ArtClub.Models.ViewModels
         public int AttendingCount { get; set; }
         public List<string> ArtPieceNames { get; set; }
 
+        public bool IsPaid { get; set; }  // Adăugăm proprietatea pentru a indica dacă evenimentul este plătit
+
+        public decimal TotalCost { get; set; }  // Adăugăm proprietatea pentru costul total
+
         // Proprietatea nouă:
         public List<Invitation> Invitations { get; set; } = new List<Invitation>();
     }

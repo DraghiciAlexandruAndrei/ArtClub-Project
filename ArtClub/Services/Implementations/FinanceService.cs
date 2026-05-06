@@ -4,46 +4,87 @@ using ArtClub.Services.Interfaces;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 
-
 namespace ArtClub.Services.Implementations
 {
     public class FinanceService : IFinanceService
     {
         private readonly IPaymentRepository _paymentRepo;
+        private readonly IUserRepository _userRepo;
 
-        public FinanceService(IPaymentRepository paymentRepo)
+        // UN SINGUR CONSTRUCTOR: Acesta primește toate dependințele necesare
+        public FinanceService(IPaymentRepository paymentRepo, IUserRepository userRepo)
         {
             _paymentRepo = paymentRepo;
+            _userRepo = userRepo;
         }
 
-        // --- Metodele care lipseau ---
+        // ============================================================
+        // LOGICA REQ-5 ȘI CHELTUIELI AUTOMATE
+        // ============================================================
 
-        public async Task<List<Payment>> GetAllPaymentsAsync()
+        public async Task<bool> ProcessMembershipUpgradeAsync(int userId, decimal amount)
         {
-            // Apelăm repository-ul pentru a lua lista ordonată
-            return await _paymentRepo.GetAllOrderedByDateAsync();
+            // Înregistrăm plata ca venit
+            var payment = new Payment
+            {
+                Amount = amount,
+                Date = DateTime.Now,
+                IsIncome = true,
+                Description = $"Upgrade Membership - User ID: {userId}"
+            };
+            await _paymentRepo.AddAsync(payment);
+
+            // Deblocăm contul membrului conform REQ-5
+            // Folosim "as Member" pentru a accesa proprietățile specifice (IsMembershipActive)
+            var user = await _userRepo.GetByIdAsync(userId) as Member;
+            if (user == null) return false;
+
+            user.IsMembershipActive = true;
+            user.EventCreationLimit = 5;
+
+            await _userRepo.UpdateAsync(user);
+            return await _paymentRepo.SaveChangesAsync();
         }
 
-        public async Task<decimal> GetTotalExpensesAsync()
+        public async Task<bool> RegisterEventExpensesAsync(int eventId, decimal amount)
         {
-            // Calculăm totalul cheltuielilor (IsIncome = false)
-            return await _paymentRepo.GetTotalSumAsync(false);
+            // Înregistrează automat cheltuielile de 200/300 lei per eveniment
+            var expense = new Payment
+            {
+                Amount = amount,
+                Date = DateTime.Now,
+                IsIncome = false,
+                Description = $"Cheltuieli automate Eveniment ID: {eventId}"
+            };
+
+            await _paymentRepo.AddAsync(expense);
+            return await _paymentRepo.SaveChangesAsync();
         }
 
-        public async Task<decimal> GetTotalIncomeAsync()
+        public decimal CalculateNonMemberReservationFee(int days)
         {
-            // Calculăm totalul veniturilor (IsIncome = true)
-            return await _paymentRepo.GetTotalSumAsync(true);
+            // Taxa pentru utilizatorii fără abonament (400 lei/zi conform cerințelor)
+            return days * 400;
         }
 
-        // --- Restul logicii de Business ---
+        // ==========================================
+        // LOGICĂ MANAGEMENT PLĂȚI ȘI RAPOARTE
+        // ==========================================
+
+        public async Task<List<Payment>> GetAllPaymentsAsync() =>
+            await _paymentRepo.GetAllOrderedByDateAsync();
+
+        public async Task<decimal> GetTotalExpensesAsync() =>
+            await _paymentRepo.GetTotalSumAsync(false);
+
+        public async Task<decimal> GetTotalIncomeAsync() =>
+            await _paymentRepo.GetTotalSumAsync(true);
 
         public async Task<decimal> CalculateMonthlyBalanceAsync()
         {
             var now = DateTime.Now;
             var income = await _paymentRepo.GetSumAsync(now.Month, now.Year, true);
             var expenses = await _paymentRepo.GetSumAsync(now.Month, now.Year, false);
-
             return income - expenses;
         }
 
@@ -51,7 +92,6 @@ namespace ArtClub.Services.Implementations
         {
             var totalIncome = await GetTotalIncomeAsync();
             var totalExpenses = await GetTotalExpensesAsync();
-
             return (totalIncome - totalExpenses) >= projectedCost;
         }
 
@@ -61,7 +101,6 @@ namespace ArtClub.Services.Implementations
             var expenses = await _paymentRepo.GetSumAsync(month, year, false);
             var payments = await _paymentRepo.GetPaymentsByPeriodAsync(month, year);
 
-            // Creare document
             using (var document = new PdfDocument())
             {
                 var page = document.AddPage();
@@ -69,30 +108,18 @@ namespace ArtClub.Services.Implementations
                 var fontTitle = new XFont("Verdana", 20, XFontStyleEx.Bold);
                 var fontText = new XFont("Verdana", 12, XFontStyleEx.Regular);
 
-                // Header
-                gfx.DrawString($"Raport Financiar {month}/{year}", fontTitle, XBrushes.Black,
-                    new XRect(0, 40, page.Width, 40), XStringFormats.Center);
+                gfx.DrawString($"Raport Financiar {month}/{year}", fontTitle, XBrushes.Black, new XRect(0, 40, page.Width, 40), XStringFormats.Center);
 
-                // Rezumat
                 int yPos = 100;
                 gfx.DrawString($"Total Venituri: {income} lei", fontText, XBrushes.Green, 50, yPos);
                 gfx.DrawString($"Total Cheltuieli: {expenses} lei", fontText, XBrushes.Red, 50, yPos + 20);
                 gfx.DrawString($"Bilanț: {income - expenses} lei", fontText, XBrushes.Black, 50, yPos + 40);
 
-                // Tabel Tranzacții
                 yPos += 80;
-                gfx.DrawString("Data", fontText, XBrushes.Gray, 50, yPos);
-                gfx.DrawString("Suma", fontText, XBrushes.Gray, 200, yPos);
-                gfx.DrawString("Tip", fontText, XBrushes.Gray, 350, yPos);
-
                 foreach (var p in payments)
                 {
                     yPos += 20;
-                    gfx.DrawString(p.Date.ToShortDateString(), fontText, XBrushes.Black, 50, yPos);
-                    gfx.DrawString($"{p.Amount} lei", fontText, XBrushes.Black, 200, yPos);
-                    gfx.DrawString(p.IsIncome ? "Venit" : "Cheltuială", fontText, XBrushes.Black, 350, yPos);
-
-                    // Verificare limită pagină
+                    gfx.DrawString($"{p.Date.ToShortDateString()} | {p.Amount} lei | {(p.IsIncome ? "Venit" : "Cheltuială")}", fontText, XBrushes.Black, 50, yPos);
                     if (yPos > page.Height - 50) break;
                 }
 
@@ -120,6 +147,7 @@ namespace ArtClub.Services.Implementations
             existing.Amount = payment.Amount;
             existing.Date = payment.Date;
             existing.IsIncome = payment.IsIncome;
+            existing.Description = payment.Description;
 
             return await _paymentRepo.SaveChangesAsync();
         }

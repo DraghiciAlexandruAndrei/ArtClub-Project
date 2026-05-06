@@ -147,6 +147,10 @@ namespace ArtClub.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsIncome")
                         .HasColumnType("bit");
 
@@ -285,6 +289,9 @@ namespace ArtClub.Migrations
 
                     b.Property<int>("EventCreationLimit")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsMembershipActive")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("MembershipDate")
                         .HasColumnType("datetime2");

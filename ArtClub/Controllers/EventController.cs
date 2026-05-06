@@ -4,7 +4,8 @@ using ArtClub.Models.ViewModels;
 using ArtClub.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using ArtClub.Attributes; 
+using ArtClub.Attributes;
+
 namespace ArtClub.Controllers
 {
     public class EventController : Controller
@@ -39,15 +40,14 @@ namespace ArtClub.Controllers
             return View(model);
         }
 
-   
-        
+        [HttpGet]
         public async Task<IActionResult> Create()
         {
             var start = DateTime.Now.AddDays(1);
             start = new DateTime(start.Year, start.Month, start.Day, 10, 0, 0);
 
-            // Luăm resursele din repository
-            var resources = await _eventService.GetAllResourcesAsync(); // Asigură-te că ai această metodă în Service
+            var resources = await _eventService.GetAllResourcesAsync();
+            await PopulateArtPiecesViewBag();
 
             var model = new EventCreateViewModel
             {
@@ -65,84 +65,78 @@ namespace ArtClub.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        
         public async Task<IActionResult> Create(EventCreateViewModel model)
         {
+            // Verificăm ModelState (SelectedArtPieceIds este acum în model)
             if (!ModelState.IsValid)
+            {
+                await PopulateArtPiecesViewBag();
+                var resources = await _eventService.GetAllResourcesAsync();
+                model.AvailableResources = resources.Select(r => new SelectListItem { Value = r.Name, Text = r.Name }).ToList();
                 return View(model);
+            }
 
             var organizerId = HttpContext.Session.GetInt32("UserId");
             if (organizerId == null)
             {
-                ModelState.AddModelError("", "Trebuie să fii autentificat pentru a crea un eveniment.");
-                return View(model);
+                return RedirectToAction("Login", "Account");
             }
 
             var resource = await _eventService.GetResourceByNameAsync(model.ResourceName);
             if (resource == null)
             {
-                ModelState.AddModelError("ResourceName", "Resursa (sala) nu a fost găsită.");
+                ModelState.AddModelError("ResourceName", "Sala selectată nu a fost găsită.");
+                await PopulateArtPiecesViewBag();
                 return View(model);
             }
 
-            // Creăm obiectul Eveniment
+            // Mapăm manual Datele către Entitate
             var ev = new Event
             {
                 Title = model.Title,
                 Description = model.Description,
                 ResourceId = resource.Id,
                 OrganizerId = organizerId.Value,
-                Budget = 0, // Setat la 0 pentru a trece de verificarea de buget dacă soldul e 0
+                Budget = 0, // Va fi calculat automat în EventService.CreateEventAsync
                 Reservation = new Reservation
                 {
                     ResourceId = resource.Id,
                     StartTime = model.StartDate,
                     EndTime = model.EndDate
-                }
+                },
+                // Legăm piesele de artă selectate
+                EventArtPieces = model.SelectedArtPieceIds?.Select(id => new EventArtPiece
+                {
+                    ArtPieceId = id
+                }).ToList() ?? new List<EventArtPiece>()
             };
 
-            try
-            {
-                var success = await _eventService.CreateEventAsync(ev);
+            var success = await _eventService.CreateEventAsync(ev);
 
-                if (!success)
-                {
-                    // Mesaj specific pentru TC-001 (Documentația de testare)
-                    ModelState.AddModelError("", "Eșec la salvare: Verifică dacă sala este disponibilă (există buffer de 1 zi) sau dacă bugetul este suficient.");
-                    return View(model);
-                }
-
-                TempData["StatusMessage"] = "Evenimentul a fost creat cu succes!";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
+            if (!success)
             {
-                ModelState.AddModelError("", "Eroare de sistem la salvarea în baza de date: " + ex.Message);
+                ModelState.AddModelError("", "Eșec: Ai atins limita de evenimente sau sala este ocupată.");
+                await PopulateArtPiecesViewBag();
+                var resources = await _eventService.GetAllResourcesAsync();
+                model.AvailableResources = resources.Select(r => new SelectListItem { Value = r.Name, Text = r.Name }).ToList();
                 return View(model);
             }
-        }
 
-        // Adaugă acest folosind contextul dacă nu ai un serviciu de utilizatori dedicat
-        // sau folosește IAccountService dacă ai unul.
+            TempData["StatusMessage"] = "Eveniment creat! Finalizează plata pentru confirmare.";
+            // Redirecționăm către Details pentru a vedea costul calculat și a plăti
+            return RedirectToAction(nameof(Details), new { title = ev.Title });
+        }
 
         public async Task<IActionResult> Details(string title)
         {
-            if (string.IsNullOrWhiteSpace(title))
-                return NotFound();
+            if (string.IsNullOrEmpty(title)) return NotFound();
 
             var ev = await _eventService.GetEventByTitleAsync(title);
+            if (ev == null) return NotFound();
 
-            if (ev == null)
-                return NotFound();
-
-            // --- LOGICA NOUĂ PENTRU INVITAȚII ---
-
-            // 1. Luăm toți utilizatorii care pot fi invitați (Membri)
-            // Înlocuiește cu serviciul tău real dacă ai unul (ex: _accountService.GetAllMembers())
             var members = await _eventService.GetAllMembersAsync();
             ViewBag.Users = members;
 
-            // 2. Mapăm datele către ViewModel
             var model = new EventDetailsViewModel
             {
                 EventId = ev.Id,
@@ -151,24 +145,29 @@ namespace ArtClub.Controllers
                 ResourceName = ev.Resource != null ? ev.Resource.Name : "No resource",
                 Date = ev.Reservation != null ? ev.Reservation.StartTime : DateTime.Now,
                 AttendingCount = ev.Invitations?.Count(i => i.Status == InvitationStatus.Accepted) ?? 0,
-                ArtPieceNames = new List<string>(), // Aici poți mapa piesele de artă dacă e cazul
 
-                // Adăugăm invitațiile existente pentru a le afișa în tabelul de status
+                // Populăm numele pieselor de artă pentru afișare
+                ArtPieceNames = ev.EventArtPieces?.Select(eap => eap.ArtPiece.Title).ToList() ?? new List<string>(),
+
+                // Trimitem costul calculat în Service către View
+                TotalCost = ev.Budget,
+
                 Invitations = ev.Invitations?.ToList() ?? new List<Invitation>()
             };
-
+            ViewBag.Users = await _eventService.GetAllMembersAsync();
             return View(model);
         }
 
+        [HttpGet]
         public async Task<IActionResult> Edit(string title)
         {
-            if (string.IsNullOrWhiteSpace(title))
-                return NotFound();
+            if (string.IsNullOrWhiteSpace(title)) return NotFound();
 
             var ev = await _eventService.GetEventByTitleAsync(title);
+            if (ev == null) return NotFound();
 
-            if (ev == null)
-                return NotFound();
+            await PopulateArtPiecesViewBag();
+            var resources = await _eventService.GetAllResourcesAsync();
 
             ViewBag.OriginalTitle = ev.Title;
 
@@ -176,10 +175,12 @@ namespace ArtClub.Controllers
             {
                 Title = ev.Title,
                 Description = ev.Description,
-                StartDate = ev.Reservation != null ? ev.Reservation.StartTime : DateTime.Now,
-                EndDate = ev.Reservation != null ? ev.Reservation.EndTime : DateTime.Now.AddHours(1),
-                SelectedResourceId = ev.ResourceId,
-                ResourceName = ev.Resource != null ? ev.Resource.Name : ""
+                StartDate = ev.Reservation?.StartTime ?? DateTime.Now,
+                EndDate = ev.Reservation?.EndTime ?? DateTime.Now.AddHours(1),
+                ResourceName = ev.Resource?.Name,
+                // Pre-selectăm piesele de artă existente
+                SelectedArtPieceIds = ev.EventArtPieces?.Select(eap => eap.ArtPieceId).ToList() ?? new List<int>(),
+                AvailableResources = resources.Select(r => new SelectListItem { Value = r.Name, Text = r.Name }).ToList()
             };
 
             return View(model);
@@ -192,15 +193,14 @@ namespace ArtClub.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.OriginalTitle = originalTitle;
+                await PopulateArtPiecesViewBag();
                 return View(model);
             }
 
             var resource = await _eventService.GetResourceByNameAsync(model.ResourceName);
-
             if (resource == null)
             {
-                ViewBag.OriginalTitle = originalTitle;
-                ModelState.AddModelError("ResourceName", "Resource not found.");
+                ModelState.AddModelError("ResourceName", "Locația nu a fost găsită.");
                 return View(model);
             }
 
@@ -209,42 +209,39 @@ namespace ArtClub.Controllers
                 Title = model.Title,
                 Description = model.Description,
                 ResourceId = resource.Id,
-
                 Reservation = new Reservation
                 {
                     ResourceId = resource.Id,
                     StartTime = model.StartDate,
                     EndTime = model.EndDate
-                }
+                },
+                EventArtPieces = model.SelectedArtPieceIds?.Select(id => new EventArtPiece
+                {
+                    ArtPieceId = id
+                }).ToList() ?? new List<EventArtPiece>()
             };
 
             var success = await _eventService.UpdateEventAsync(originalTitle, ev);
+            if (!success) return NotFound();
 
-            if (!success)
-                return NotFound();
-
-            TempData["StatusMessage"] = "Event updated successfully.";
-            return RedirectToAction(nameof(Index));
+            TempData["StatusMessage"] = "Eveniment actualizat cu succes.";
+            return RedirectToAction(nameof(Details), new { title = ev.Title });
         }
 
         public async Task<IActionResult> Delete(string title)
         {
-            if (string.IsNullOrWhiteSpace(title))
-                return NotFound();
+            if (string.IsNullOrWhiteSpace(title)) return NotFound();
 
             var ev = await _eventService.GetEventByTitleAsync(title);
-
-            if (ev == null)
-                return NotFound();
+            if (ev == null) return NotFound();
 
             var model = new EventDetailsViewModel
             {
                 EventId = ev.Id,
                 Title = ev.Title,
-                OrganizerName = ev.Organizer != null ? ev.Organizer.UserName : "Unknown organizer",
-                ResourceName = ev.Resource != null ? ev.Resource.Name : "No resource",
-                Date = ev.Reservation != null ? ev.Reservation.StartTime : DateTime.Now,
-                AttendingCount = ev.Invitations != null ? ev.Invitations.Count : 0
+                OrganizerName = ev.Organizer?.UserName ?? "Unknown",
+                ResourceName = ev.Resource?.Name ?? "No resource",
+                Date = ev.Reservation?.StartTime ?? DateTime.Now
             };
 
             return View(model);
@@ -255,14 +252,20 @@ namespace ArtClub.Controllers
         public async Task<IActionResult> DeleteConfirmed(string title)
         {
             var success = await _eventService.DeleteEventByTitleAsync(title);
+            if (!success) return NotFound();
 
-            if (!success)
-                return NotFound();
-
-            TempData["StatusMessage"] = "Event deleted successfully.";
+            TempData["StatusMessage"] = "Eveniment șters.";
             return RedirectToAction(nameof(Index));
         }
 
-       
+        private async Task PopulateArtPiecesViewBag()
+        {
+            var artPieces = await _artPieceService.GetAllArtPiecesAsync();
+            ViewBag.ArtPiecesList = artPieces.Select(a => new SelectListItem
+            {
+                Value = a.Id.ToString(),
+                Text = a.Title
+            }).ToList();
+        }
     }
 }

@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ArtClub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260504221054_actualizareevent")]
-    partial class actualizareevent
+    [Migration("20260506130354_userolehbvauhsd")]
+    partial class userolehbvauhsd
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -149,6 +149,10 @@ namespace ArtClub.Migrations
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsIncome")
                         .HasColumnType("bit");
@@ -288,6 +292,9 @@ namespace ArtClub.Migrations
 
                     b.Property<int>("EventCreationLimit")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsMembershipActive")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("MembershipDate")
                         .HasColumnType("datetime2");

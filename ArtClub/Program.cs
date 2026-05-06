@@ -56,6 +56,16 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.MapControllerRoute(
+    name: "eventDetails",
+    pattern: "Event/Details/{title}",
+    defaults: new { controller = "Event", action = "Details" });
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}")
+    .WithStaticAssets();
+
 app.UseHttpsRedirection();
 app.UseRouting();
 

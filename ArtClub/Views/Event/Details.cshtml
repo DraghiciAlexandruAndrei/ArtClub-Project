@@ -2,90 +2,107 @@
 @using ArtClub.Models.Enums
 
 <div class="container mt-4">
-    <div class="card shadow-sm">
-        <div class="card-header bg-white">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
             <h1 class="h3 mb-0">@Model.Title</h1>
+            <span class="badge bg-info text-dark">ID: #@Model.EventId</span>
         </div>
+
         <div class="card-body">
             <div class="row">
-                <div class="col-md-6">
-                    <p><strong>Organizer:</strong> @Model.OrganizerName</p>
-                    <p><strong>Resource:</strong> @Model.ResourceName</p>
-                    <p><strong>Date:</strong> @Model.Date.ToString("dd MMM yyyy")</p>
+                <div class="col-md-7">
+                    <h5 class="text-muted border-bottom pb-2">Informații Generale</h5>
+                    <p><strong><i class="bi bi-person"></i> Organizator:</strong> @Model.OrganizerName</p>
+                    <p><strong><i class="bi bi-geo-alt"></i> Locație:</strong> @Model.ResourceName</p>
+                    <p><strong><i class="bi bi-calendar-event"></i> Data:</strong> @Model.Date.ToString("dd MMM yyyy HH:mm")</p>
+
+                    @* REQ-5: Zona de Piese de Artă *@
+                    <h5 class="mt-4 text-muted border-bottom pb-2">Piese de Artă Expuse</h5>
+                    @if (Model.ArtPieceNames != null && Model.ArtPieceNames.Any())
+                    {
+                        <div class="row row-cols-1 row-cols-md-2 g-2 mt-1">
+                            @foreach (var artName in Model.ArtPieceNames)
+                            {
+                                <div class="col">
+                                    <div class="p-2 border rounded bg-light">
+                                        <i class="bi bi-palette-fill text-primary"></i> @artName
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-light border-dashed">
+                            <i class="bi bi-info-circle"></i> Nicio piesă de artă nu a fost selectată.
+                        </div>
+                    }
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <div class="badge bg-primary fs-6">
-                        Attending: @Model.AttendingCount
+
+                <div class="col-md-5">
+                    @* PANOU FINANCIAR ȘI BUTON DE PLATĂ *@
+                    <div class="card bg-light border-primary mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title font-weight-bold text-primary">Costuri Automate (REQ-5)</h6>
+                            <hr />
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Chirie Locație:</span>
+                                <span>300 lei / zi</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Piese Artă (@(Model.ArtPieceNames?.Count ?? 0)):</span>
+                                <span>@((Model.ArtPieceNames?.Count ?? 0) * 200) lei / zi</span>
+                            </div>
+                            <hr />
+                            <div class="d-flex justify-content-between font-weight-bold text-danger h5 mb-3">
+                                <span>Total Estimat:</span>
+                                <span>@Model.TotalCost lei</span>
+                            </div>
+
+                            @if (!Model.IsPaid)
+                            {
+                                @* BUTONUL CĂTRE PLATĂ - Apare doar dacă nu s-a plătit *@
+                                <form asp-controller="Finance" asp-action="Pay" method="post">
+                                    <input type="hidden" name="EventId" value="@Model.EventId" />
+                                    <input type="hidden" name="Amount" value="@Model.TotalCost" />
+                                    <button type="submit" class="btn btn-success w-100 btn-lg shadow-sm">
+                                        <i class="bi bi-credit-card-2-front"></i> Finalizează Plata
+                                    </button>
+                                </form>
+                                <small class="text-muted d-block text-center mt-2">
+                                    Confirmarea plății fixează data și locația.
+                                </small>
+                            }
+                            else
+                            {
+                                <div class="alert alert-success border-success mb-0">
+                                    <i class="bi bi-check-circle-fill"></i> Eveniment Plătit
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="alert @(Model.IsPaid ? "alert-success" : "alert-warning") text-center shadow-sm">
+                        <strong>Status: @(Model.IsPaid ? "Rezervare Confirmată" : "Așteaptă Plata (Provizoriu)")</strong>
                     </div>
                 </div>
             </div>
 
-            <hr />
+            <div class="mt-5 d-flex gap-2 border-top pt-3">
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Înapoi
+                </a>
 
-            <!-- Secțiune Invită Artiști -->
-            <h4 class="mt-4">Invită Artiști</h4>
-            <form asp-controller="Invitation" asp-action="Invite" method="post" class="row g-3 align-items-center">
-                <input type="hidden" name="eventId" value="@Model.EventId" />
-                <div class="col-sm-6">
-                    <select name="inviteeId" class="form-select" required>
-                        <option value="">-- Selectează un artist --</option>
-                        @foreach (var user in (List<ArtClub.Models.Entities.User>)ViewBag.Users)
-                        {
-                            <option value="@user.Id">@user.UserName</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-sm-3">
-                    <button type="submit" class="btn btn-success w-100">Trimite Invitația</button>
-                </div>
-            </form>
+                @if (!Model.IsPaid)
+                {
+                    <a asp-action="Edit" asp-route-title="@Model.Title" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Editează
+                    </a>
+                }
 
-            <hr />
-
-            <!-- Lista de Invitații trimise -->
-            <h4 class="mt-4">Status Invitații</h4>
-            @if (Model.Invitations != null && Model.Invitations.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Artist</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var inv in Model.Invitations)
-                            {
-                                <tr>
-                                    <td>@inv.Invitee?.UserName</td>
-                                    <td>
-                                        @if (inv.Status == InvitationStatus.Accepted)
-                                        {
-                                            <span class="badge bg-success">Accepted</span>
-                                        }
-                                        else if (inv.Status == InvitationStatus.Declined)
-                                        {
-                                            <span class="badge bg-danger">Declined</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning text-dark">Pending</span>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <p class="text-muted">Nu a fost invitat nimeni încă.</p>
-            }
-
-            <div class="mt-4">
-                <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+                <a asp-action="Delete" asp-route-title="@Model.Title" class="btn btn-danger ms-auto">
+                    <i class="bi bi-trash"></i> Șterge Evenimentul
+                </a>
             </div>
         </div>
     </div>

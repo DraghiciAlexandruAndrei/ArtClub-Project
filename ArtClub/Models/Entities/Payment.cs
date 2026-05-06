@@ -13,6 +13,8 @@ namespace ArtClub.Models.Entities
         public PaymentType Type { get; set; }
         public DateTime Date { get; set; } = DateTime.Now;
 
+        public string Description { get; set; }
+
         // Determină dacă este venit (true) sau cheltuială (false)
         public bool IsIncome { get; set; }
     }

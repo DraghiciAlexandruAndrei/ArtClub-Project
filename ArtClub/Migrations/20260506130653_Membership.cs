@@ -5,7 +5,7 @@
 namespace ArtClub.Migrations
 {
     /// <inheritdoc />
-    public partial class actualizareevent : Migration
+    public partial class Membership : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

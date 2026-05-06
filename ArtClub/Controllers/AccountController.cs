@@ -9,14 +9,17 @@ namespace ArtClub.Controllers
     public class AccountController : Controller
     {
         private readonly IUserService _userService;
+        private readonly IFinanceService _financeService;
 
-        public AccountController(IUserService userService)
+        // CORECT: Injectăm ambele servicii prin constructor pentru a respecta DI
+        public AccountController(IUserService userService, IFinanceService financeService)
         {
             _userService = userService;
+            _financeService = financeService;
         }
 
         // ==========================================
-        // 1. LISTARE UTILIZATORI (INDEX)
+        // 1. LISTARE UTILIZATORI (ADMIN ONLY)
         // ==========================================
         public async Task<IActionResult> Index()
         {
@@ -28,10 +31,7 @@ namespace ArtClub.Controllers
         // 2. LOGICĂ DE LOGIN
         // ==========================================
         [HttpGet]
-        public IActionResult Login()
-        {
-            return View(new LoginViewModel());
-        }
+        public IActionResult Login() => View(new LoginViewModel());
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -39,7 +39,6 @@ namespace ArtClub.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
-            // Verificare credențiale prin serviciu
             var success = await _userService.AuthenticateAsync(model.Email, model.Password);
             if (!success)
             {
@@ -47,20 +46,23 @@ namespace ArtClub.Controllers
                 return View(model);
             }
 
-            // Preluare date utilizator pentru sesiune
             var user = await _userService.GetUserByEmailAsync(model.Email);
             if (user == null || !user.IsActive)
             {
-                ModelState.AddModelError("", "Contul este inactiv sau nu a fost găsit.");
+                ModelState.AddModelError("", "Contul este inactiv.");
                 return View(model);
             }
 
-            // Setare date în sesiune
+            // Setare Sesiune
             HttpContext.Session.SetInt32("UserId", user.Id);
             HttpContext.Session.SetString("UserName", user.UserName ?? "User");
             HttpContext.Session.SetString("UserRole", user.Role.ToString());
 
-            TempData["StatusMessage"] = $"Bine ai revenit, {user.UserName}!";
+            if (user is Member member)
+            {
+                HttpContext.Session.SetString("IsMembershipActive", member.IsMembershipActive.ToString());
+            }
+
             return RedirectToAction("Index", "Home");
         }
 
@@ -68,61 +70,107 @@ namespace ArtClub.Controllers
         // 3. LOGICĂ DE ÎNREGISTRARE (REGISTER)
         // ==========================================
         [HttpGet]
-        public IActionResult Register()
-        {
-            // NOTĂ: Dacă fișierul tău se numește Create.cshtml, folosim "Create"
-            // Dacă l-ai redenumit în Register.cshtml, poți folosi return View();
-            return View("Create", new RegisterViewModel());
-        }
+        public IActionResult Register() => View("Create", new RegisterViewModel());
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View("Create", model);
+            if (!ModelState.IsValid) return View("Create", model);
 
-            // Creare entitate Member din ViewModel
             var member = new Member
             {
                 UserName = $"{model.FirstName} {model.LastName}".Trim(),
                 Email = model.Email,
                 Role = UserRole.Member,
                 IsActive = true,
+                IsMembershipActive = false,
                 MembershipDate = DateTime.Now,
-                EventCreationLimit = 5
+                EventCreationLimit = 1 // REQ-5: 1 eveniment cadou
             };
 
             var created = await _userService.RegisterUserAsync(member, model.Password);
             if (!created)
             {
-                ModelState.AddModelError("Email", "Această adresă de email este deja înregistrată.");
+                ModelState.AddModelError("Email", "Email deja existent.");
                 return View("Create", model);
             }
 
-            TempData["StatusMessage"] = "Înregistrare reușită! Te poți loga acum.";
             return RedirectToAction(nameof(Login));
         }
 
         // ==========================================
-        // 4. LOGICĂ DE LOGOUT
+        // 4. PROFIL ȘI EDITARE (MEMBRI)
         // ==========================================
-        public IActionResult Logout()
+        [HttpGet]
+        public async Task<IActionResult> Profile()
         {
-            HttpContext.Session.Clear();
-            TempData["StatusMessage"] = "Te-ai deconectat cu succes.";
-            return RedirectToAction("Index", "Home");
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction(nameof(Login));
+
+            var user = await _userService.GetUserByIdAsync(userId.Value);
+            return View(user);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction(nameof(Login));
+
+            var user = await _userService.GetUserByIdAsync(userId.Value);
+            var model = new RegisterViewModel { Email = user.Email }; // Simplificat pentru editare
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(RegisterViewModel model)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction(nameof(Login));
+
+            var user = await _userService.GetUserByIdAsync(userId.Value);
+            user.Email = model.Email;
+            user.UserName = $"{model.FirstName} {model.LastName}".Trim();
+
+            await _userService.UpdateUserAsync(user);
+            HttpContext.Session.SetString("UserName", user.UserName);
+
+            return RedirectToAction(nameof(Profile));
         }
 
         // ==========================================
-        // 5. DETALII UTILIZATOR
+        // 5. UPGRADE STATUS (REQ-5)
         // ==========================================
-        public async Task<IActionResult> Details(int id)
-        {
-            var user = await _userService.GetUserByIdAsync(id);
-            if (user == null) return NotFound();
+        [HttpGet]
+        public IActionResult Upgrade() => View();
 
-            return View(user);
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProcessUpgrade()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction(nameof(Login));
+
+            // Procesare financiară (100 lei conform cerinței)
+            var success = await _financeService.ProcessMembershipUpgradeAsync(userId.Value, 100);
+
+            if (success)
+            {
+                HttpContext.Session.SetString("IsMembershipActive", "True");
+                TempData["StatusMessage"] = "Abonament activat! Limită ridicată la 5 evenimente.";
+                return RedirectToAction("Index", "Event");
+            }
+
+            ModelState.AddModelError("", "Eroare la procesarea plății.");
+            return View("Upgrade");
+        }
+
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Index", "Home");
         }
     }
 }

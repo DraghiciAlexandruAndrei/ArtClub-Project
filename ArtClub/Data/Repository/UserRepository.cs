@@ -28,5 +28,11 @@ namespace ArtClub.DataAccess.Repositories
         public void Remove(User user) => _context.Users.Remove(user);
 
         public async Task<bool> SaveChangesAsync() => await _context.SaveChangesAsync() > 0;
+
+        public async Task UpdateAsync(User user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
     }
 }
