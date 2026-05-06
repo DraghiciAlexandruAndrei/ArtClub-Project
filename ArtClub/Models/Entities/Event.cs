@@ -1,4 +1,6 @@
 ﻿using ArtClub.Models.Enums;
+using System.Collections.Generic;
+using System;
 
 namespace ArtClub.Models.Entities
 {
@@ -10,18 +12,17 @@ namespace ArtClub.Models.Entities
         public DateTime Date { get; set; }
         public EventStatus Status { get; set; } = EventStatus.Draft;
 
-        //Buget eveniment
+        // Buget eveniment
         public decimal Budget { get; set; }
 
+        // CORECT: Legătura trebuie să fie către clasa User (care moștenește IdentityUser)
         public int OrganizerId { get; set; }
-        public virtual Member Organizer { get; set; }
+        public virtual User Organizer { get; set; }
 
         public int ResourceId { get; set; }
         public virtual Resource Resource { get; set; }
 
-
         public virtual Reservation Reservation { get; set; }
-
 
         // Relații Many-to-Many și invitații
         public virtual ICollection<EventArtPiece> EventArtPieces { get; set; } = new List<EventArtPiece>();

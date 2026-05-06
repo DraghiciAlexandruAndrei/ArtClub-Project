@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArtClub.DataAccess.Repositories
 {
-    public class EventRepository : IEventRepository
+    public class EventRepository :  IEventRepository
     {
         private readonly ApplicationDbContext _context;
         public EventRepository(ApplicationDbContext context) => _context = context;
@@ -57,6 +57,29 @@ namespace ArtClub.DataAccess.Repositories
         {
             return await _context.Resources
                 .OrderBy(r => r.Name)
+                .ToListAsync();
+        }
+
+        // Verifică dacă în paranteză scrie exact 'userId' (cu 'u' mic)
+        // În EventRepository.cs
+        public async Task<List<Event>> GetByOrganizerIdAsync(string userId)
+        {
+            // 1. Verificăm dacă userId nu este null sau gol pentru a evita erori la Parse
+            if (string.IsNullOrEmpty(userId))
+            {
+                return new List<Event>();
+            }
+
+            // 2. Transformăm string-ul primit de la Identity în int (pentru baza de date)
+            // Aici se declară variabila 'id'
+            int id = int.Parse(userId);
+
+            // 3. Executăm interogarea folosind 'id' (care este int)
+            return await _context.Events
+                .Include(e => e.Resource)
+                .Include(e => e.Reservation)
+                .Where(e => e.OrganizerId == id) // Comparăm int cu int
+                .OrderByDescending(e => e.Reservation.StartTime)
                 .ToListAsync();
         }
     }

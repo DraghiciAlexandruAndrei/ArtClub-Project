@@ -1,4 +1,5 @@
 ﻿using ArtClub.DataAccess.Interfaces;
+using ArtClub.DataAccess.Repositories;
 using ArtClub.Models.Entities;
 using ArtClub.Models.Enums;
 using ArtClub.Services.Interfaces;
@@ -32,15 +33,18 @@ namespace ArtClub.Services.Implementations
         {
             if (model == null || model.Reservation == null) return false;
 
-            // 1. Verificăm limita de evenimente conform profilului (REQ-5)
-            var user = await _userRepo.GetByIdAsync(model.OrganizerId) as Member;
+            // 1. Verificăm limita de evenimente (REQ-5)
+            // Schimbare: Nu mai facem cast la Member, folosim clasa User direct
+            var user = await _userRepo.GetByIdAsync(model.OrganizerId);
+            if (user == null) return false;
+
             var currentEvents = await _eventRepo.GetAllWithDetailsAsync();
             var organizerEventsCount = currentEvents.Count(e => e.OrganizerId == model.OrganizerId);
 
-            if (user == null || organizerEventsCount >= user.EventCreationLimit) return false;
+            // Folosim proprietatea EventCreationLimit mutată în clasa User
+            if (organizerEventsCount >= user.EventCreationLimit) return false;
 
-            // 2. Calculăm costul estimat (300 lei/zi locație + 200 lei/zi/piesă)
-            // NU verificăm fondurile aici, deoarece plata se face la "Details"
+            // 2. Calculăm costul estimat
             int artCount = model.EventArtPieces?.Count ?? 0;
             int days = (model.Reservation.EndTime - model.Reservation.StartTime).Days;
             if (days <= 0) days = 1;
@@ -55,7 +59,7 @@ namespace ArtClub.Services.Implementations
                 if (success)
                 {
                     await _notificationService.SendEmailAsync(user.Email, "Eveniment Creat",
-                        $"Evenimentul '{model.Title}' a fost creat. Cost estimat: {model.Budget} lei. Te rugăm să finalizezi plata.");
+                        $"Evenimentul '{model.Title}' a fost creat. Cost estimat: {model.Budget} lei.");
                 }
                 return success;
             }
@@ -78,13 +82,12 @@ namespace ArtClub.Services.Implementations
                 ev.Reservation.EndTime = model.Reservation.EndTime;
             }
 
-            // Actualizăm și piesele de artă dacă au fost modificate
             if (model.EventArtPieces != null)
             {
                 ev.EventArtPieces = model.EventArtPieces;
             }
 
-            // Recalculăm bugetul în caz că s-a schimbat durata sau nr. de piese
+            // Recalculăm bugetul
             int artCount = ev.EventArtPieces?.Count ?? 0;
             int days = (ev.Reservation.EndTime - ev.Reservation.StartTime).Days;
             if (days <= 0) days = 1;
@@ -93,7 +96,7 @@ namespace ArtClub.Services.Implementations
             return await _eventRepo.SaveChangesAsync();
         }
 
-        // --- Metodele de suport rămase intacte conform cerinței ---
+        // --- Metodele de suport rămase intacte, dar folosind clasa User ---
 
         public async Task<bool> CancelEventAsync(int eventId)
         {
@@ -161,10 +164,18 @@ namespace ArtClub.Services.Implementations
             return await _eventRepo.GetAllResourcesAsync();
         }
 
+
         public async Task<List<User>> GetAllMembersAsync()
         {
             var users = await _userRepo.GetAllOrderedByNameAsync();
+            // Filtrăm după rolul din clasa User
             return users.Where(u => u.Role == UserRole.Member).ToList();
+        }
+        // EventService.cs
+        public async Task<List<Event>> GetEventsByOrganizerIdAsync(string userId)
+        {
+            // Service-ul doar cere datele de la repository
+            return await _eventRepo.GetByOrganizerIdAsync(userId);
         }
     }
 }

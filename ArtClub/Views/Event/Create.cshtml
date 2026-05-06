@@ -1,10 +1,14 @@
 ﻿@model ArtClub.Models.ViewModels.EventCreateViewModel
-@using Microsoft.AspNetCore.Http
-@inject IHttpContextAccessor HttpContextAccessor
+@using Microsoft.AspNetCore.Identity
+@using ArtClub.Models.Entities
+@inject UserManager<User> UserManager
 
 @{
     ViewData["Title"] = "Create event";
-    var isActive = HttpContextAccessor.HttpContext.Session.GetString("IsMembershipActive") == "True";
+
+    // MODIFICARE 1: Folosim UserManager în loc de Session pentru a verifica statusul
+    var user = await UserManager.GetUserAsync(User);
+    var isActive = user?.IsMembershipActive ?? false;
 }
 
 <div class="container mt-4">
@@ -19,6 +23,9 @@
     <div class="row">
         <div class="col-md-8">
             <form asp-action="Create" method="post" class="row g-3 shadow-sm p-4 bg-light rounded">
+                @* MODIFICARE 2: Token-ul Anti-Forgery este generat automat de asp-action în interiorul form-ului,
+                   am șters linia @Html.AntiForgeryToken() de sus pentru a evita conflictele. *@
+                
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                 <div class="col-12">
@@ -53,14 +60,15 @@
                     <span asp-validation-for="ResourceName" class="text-danger"></span>
                 </div>
 
-                @* REQ-5: Multi-select pentru piese de artă *@
                 <div class="col-md-6">
                     <label class="form-label font-weight-bold text-primary">Piese de Artă (200 lei/buc/zi)</label>
                     <select name="SelectedArtPieceIds" class="form-select border-primary" multiple size="3" id="artPieces">
-                        @* Acestea ar trebui să vină din ViewModel.ArtPiecesList *@
-                        @foreach (var item in (IEnumerable<SelectListItem>)ViewBag.ArtPiecesList)
+                        @if (ViewBag.ArtPiecesList != null)
                         {
-                            <option value="@item.Value">@item.Text</option>
+                            foreach (var item in (IEnumerable<SelectListItem>)ViewBag.ArtPiecesList)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
                         }
                     </select>
                     <small class="text-muted">Ține apăsat Ctrl pentru selecție multiplă.</small>
@@ -101,11 +109,16 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        // Logica simplă pentru calcularea costului estimat în timp real
         function calculatePreview() {
-            const start = new Date(document.getElementById('startDate').value);
-            const end = new Date(document.getElementById('endDate').value);
-            const artCount = Array.from(document.getElementById('artPieces').selectedOptions).length;
+            const startStr = document.getElementById('startDate').value;
+            const endStr = document.getElementById('endDate').value;
+            const artPiecesSelect = document.getElementById('artPieces');
+
+            if (!startStr || !endStr || !artPiecesSelect) return;
+
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+            const artCount = Array.from(artPiecesSelect.selectedOptions).length;
 
             if (start && end && end > start) {
                 const diffTime = Math.abs(end - start);

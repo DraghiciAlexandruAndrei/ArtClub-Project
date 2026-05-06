@@ -11,7 +11,6 @@ namespace ArtClub.Services.Implementations
         private readonly IPaymentRepository _paymentRepo;
         private readonly IUserRepository _userRepo;
 
-        // UN SINGUR CONSTRUCTOR: Acesta primește toate dependințele necesare
         public FinanceService(IPaymentRepository paymentRepo, IUserRepository userRepo)
         {
             _paymentRepo = paymentRepo;
@@ -24,7 +23,7 @@ namespace ArtClub.Services.Implementations
 
         public async Task<bool> ProcessMembershipUpgradeAsync(int userId, decimal amount)
         {
-            // Înregistrăm plata ca venit
+            // 1. Înregistrăm plata ca venit
             var payment = new Payment
             {
                 Amount = amount,
@@ -34,21 +33,24 @@ namespace ArtClub.Services.Implementations
             };
             await _paymentRepo.AddAsync(payment);
 
-            // Deblocăm contul membrului conform REQ-5
-            // Folosim "as Member" pentru a accesa proprietățile specifice (IsMembershipActive)
-            var user = await _userRepo.GetByIdAsync(userId) as Member;
+            // 2. Deblocăm contul membrului conform REQ-5
+            // Schimbare: Nu mai facem cast "as Member", proprietățile sunt în User
+            var user = await _userRepo.GetByIdAsync(userId);
             if (user == null) return false;
 
             user.IsMembershipActive = true;
-            user.EventCreationLimit = 5;
+            user.MembershipDate = DateTime.Now; // Setăm data activării
+            user.EventCreationLimit = 5; // Limita ridicată conform REQ-5
 
+            // Actualizăm utilizatorul folosind repository-ul (care lucrează acum cu DbSet<User>)
             await _userRepo.UpdateAsync(user);
+
+            // Salvăm ambele modificări (plata și statusul userului)
             return await _paymentRepo.SaveChangesAsync();
         }
 
         public async Task<bool> RegisterEventExpensesAsync(int eventId, decimal amount)
         {
-            // Înregistrează automat cheltuielile de 200/300 lei per eveniment
             var expense = new Payment
             {
                 Amount = amount,
@@ -63,7 +65,7 @@ namespace ArtClub.Services.Implementations
 
         public decimal CalculateNonMemberReservationFee(int days)
         {
-            // Taxa pentru utilizatorii fără abonament (400 lei/zi conform cerințelor)
+            // 400 lei/zi conform cerințelor pentru non-membri
             return days * 400;
         }
 
@@ -90,9 +92,8 @@ namespace ArtClub.Services.Implementations
 
         public async Task<bool> HasClubSufficientFundsAsync(decimal projectedCost)
         {
-            var totalIncome = await GetTotalIncomeAsync();
-            var totalExpenses = await GetTotalExpensesAsync();
-            return (totalIncome - totalExpenses) >= projectedCost;
+            var balance = await GetTotalIncomeAsync() - await GetTotalExpensesAsync();
+            return balance >= projectedCost;
         }
 
         public async Task<byte[]> GenerateMonthlyReportAsync(int month, int year)

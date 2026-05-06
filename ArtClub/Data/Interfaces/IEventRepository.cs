@@ -18,5 +18,7 @@ namespace ArtClub.DataAccess.Interfaces
         Task<Invitation?> GetInvitationByIdAsync(int id);
 
         Task<List<Resource>> GetAllResourcesAsync();
+
+        Task<List<Event>> GetByOrganizerIdAsync(string userId);
     }
 }

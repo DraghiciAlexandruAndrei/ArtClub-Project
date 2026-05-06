@@ -1,10 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using ArtClub.DataAccess;
 using ArtClub.DataAccess.Interfaces;
 using ArtClub.DataAccess.Repositories;
-using ArtClub.Services.Interfaces;
-using ArtClub.Services.Implementations;
+using ArtClub.Models.Entities;
 using ArtClub.Services;
+using ArtClub.Services.Implementations;
+using ArtClub.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,11 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+builder.Services.AddDefaultIdentity<User>(options => {
+    options.Password.RequireDigit = false; // Poți pune reguli mai relaxate pentru dev
+    options.SignIn.RequireConfirmedAccount = false;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
 

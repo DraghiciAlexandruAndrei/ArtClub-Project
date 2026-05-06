@@ -192,7 +192,6 @@ D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
 D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\scopedcss\bundle\ArtClub.styles.css
 D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\scopedcss\projectbundle\ArtClub.bundle.scp.css
-D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\compressed\xvx3pobe80-{0}-b9sayid5wm-b9sayid5wm.gz
 D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\compressed\1esmceq3ij-{0}-61n19gt1b8-61n19gt1b8.gz
 D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\compressed\ity8rw6fza-{0}-xtxxf3hu2r-xtxxf3hu2r.gz
 D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\compressed\5duk4hyxdt-{0}-bqjiyaj88i-bqjiyaj88i.gz
@@ -344,3 +343,4 @@ D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\compressed\a3ygkwa5zy-{0}-2z0n
 D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\compressed\nezrqnk58p-{0}-muycvpuwrr-muycvpuwrr.gz
 D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\compressed\v0zgfp0y55-{0}-87fc7y1x7t-87fc7y1x7t.gz
 D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\compressed\yfc7ypekbg-{0}-mlv21k5csn-mlv21k5csn.gz
+D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\compressed\xvx3pobe80-{0}-wpcjotsuho-wpcjotsuho.gz

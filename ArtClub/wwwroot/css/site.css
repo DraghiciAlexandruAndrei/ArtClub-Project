@@ -29,3 +29,27 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+<style >
+/* ... restul stilurilor tale ... */
+/* Forțăm textul să fie alb și vizibil pentru butonul de Register */
+.register-btn {
+    color: #ffffff !important; /* Text alb */
+    background-color: #0d6efd !important; /* Albastru Bootstrap */
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Ce se întâmplă când punem mouse-ul sau ținem apăsat (hold/active) */
+.register-btn:hover,
+.register-btn:active,
+.register-btn:focus {
+    color: #ffffff !important; /* Textul RĂMÂNE alb */
+    background-color: #0b5ed7 !important; /* Un albastru puțin mai închis */
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
+}
+
+</style >

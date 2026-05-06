@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ArtClub.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ArtClub.Models.Entities;
 
 namespace ArtClub.DataAccess
 {
@@ -11,7 +11,7 @@ namespace ArtClub.DataAccess
             // 1. Setăm Cheia Primară
             builder.HasKey(e => e.Id);
 
-            // 2. Configurare Proprietăți (Validări la nivel de bază de date)
+            // 2. Configurare Proprietăți
             builder.Property(e => e.Title)
                 .IsRequired()
                 .HasMaxLength(200);
@@ -19,29 +19,28 @@ namespace ArtClub.DataAccess
             builder.Property(e => e.Description)
                 .HasMaxLength(1000);
 
-            // 3. Relația cu Organizatorul (Member)
-            // Un membru poate organiza mai multe evenimente
+            // Avem grijă cu zecimalele pentru buget (Standard SQL Server)
+            builder.Property(e => e.Budget)
+                .HasColumnType("decimal(18,2)");
+
+            // 3. Relația cu Organizatorul (User - Identity)
+            // Schimbăm 'm.OrganizedEvents' să fie apelat pe clasa User
             builder.HasOne(e => e.Organizer)
-                .WithMany(m => m.OrganizedEvents)
+                .WithMany(u => u.OrganizedEvents)
                 .HasForeignKey(e => e.OrganizerId)
                 .OnDelete(DeleteBehavior.Restrict);
-            // Restrict: Dacă ștergem un membru, nu vrem să dispară 
-            // automat evenimentele organizate de el din istoric.
 
-            // 4. Relația cu Resursa (Sala/Echipamentul)
+            // 4. Relația cu Resursa
             builder.HasOne(e => e.Resource)
                 .WithMany(r => r.Events)
                 .HasForeignKey(e => e.ResourceId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 5. Relația 1:1 cu Reservation (Inima sistemului de buffer)
-            // Fiecare Eveniment are exact o Rezervare în calendar
+            // 5. Relația 1:1 cu Reservation
             builder.HasOne(e => e.Reservation)
                 .WithOne(r => r.Event)
                 .HasForeignKey<Reservation>(r => r.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
-            // Cascade: Dacă ștergem evenimentul, ștergem și 
-            // intervalul ocupat în calendar (rezervarea).
         }
     }
 }

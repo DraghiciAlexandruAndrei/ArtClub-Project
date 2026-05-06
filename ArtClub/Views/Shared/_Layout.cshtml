@@ -1,56 +1,97 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using ArtClub.Models.Entities
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ArtClub</title>
-    <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ArtClub.styles.css" asp-append-version="true" />
+    <style>
+        .navbar-brand { font-weight: 800; letter-spacing: 1px; }
+        .nav-link { font-weight: 500; }
+        .nav-link:hover { color: #0d6efd !important; }
+        /* Fix pentru alinierea butoanelor la ecrane mici */
+        @@media (max-width: 991.98px) {
+            .navbar-nav.ms-auto { margin-top: 1rem; border-top: 1px solid #eee; pt: 2; }
+            .nav-item .btn { width: 100%; margin-bottom: 0.5rem; text-align: center; }
+        }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm mb-4">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">ArtClub</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand text-primary" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-palette2"></i> ArtClub
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between" id="navbarContent">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Acasa</a>
+                        </li>
 
-                        @* Verificăm dacă utilizatorul este logat prin Session *@
-                        @if (Context.Session.GetInt32("UserId") != null)
+                        @if (SignInManager.IsSignedIn(User))
                         {
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Dashboard">Dashboard</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Event" asp-action="Index">Events</a></li>
-
-                            @* Link simplu către Inbox *@
                             <li class="nav-item">
-                                <a class="nav-link text-primary font-weight-bold" asp-controller="Invitation" asp-action="Inbox">
-                                    📩 Invitații
-                                </a>
+                                <a class="nav-link text-dark" asp-controller="Event" asp-action="Index">Evenimente</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="ArtPiece" asp-action="Index">Galerie Arta</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Resource" asp-action="Index">Resurse/Sali</a>
                             </li>
 
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="ArtPiece" asp-action="Index">Art Pieces</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Resource" asp-action="Index">Resources</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Finance" asp-action="Dashboard">Finance</a></li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Finance" asp-action="Dashboard">Finante</a>
+                                </li>
+                            }
                         }
                     </ul>
 
-                    <ul class="navbar-nav ms-auto">
-                        @if (Context.Session.GetInt32("UserId") == null)
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        @if (!SignInManager.IsSignedIn(User))
                         {
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a></li>
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-outline-primary btn-sm px-4 me-lg-2 mb-2 mb-lg-0" asp-controller="Account" asp-action="Login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-primary btn-sm px-4 register-btn"
+                                   asp-controller="Account"
+                                   asp-action="Register">Register</a>
+                            </li>
                         }
                         else
                         {
+                            <li class="nav-item me-2">
+                                <span class="nav-text text-muted small">Salut, @(User.Identity?.Name ?? "Utilizator")!</span>
+                            </li>
+
+                            <li class="nav-item me-3">
+                                <a class="nav-link text-dark position-relative" asp-controller="Account" asp-action="MyProfile" title="Profilul meu & Invitații">
+                                    <i class="bi bi-person-circle fs-5"></i>
+                                    <span class="position-absolute top-1 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                                </a>
+                            </li>
                             <li class="nav-item">
-                                <a class="nav-link text-danger" asp-controller="Account" asp-action="Logout">Logout</a>
+                                <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
+                                    <button type="submit" class="nav-link btn btn-link text-danger fw-bold border-0 p-0" style="background:none; vertical-align: middle;">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </button>
+                                </form>
                             </li>
                         }
                     </ul>
@@ -58,21 +99,27 @@
             </div>
         </nav>
     </header>
+
     <div class="container">
-        @if (TempData["StatusMessage"] is string statusMessage)
+        @if (TempData["StatusMessage"] != null)
         {
-            <div class="alert alert-info" role="alert">@statusMessage</div>
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-check-circle me-2"></i> @TempData["StatusMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         }
-        <main role="main" class="pb-3">
+
+        <main role="main" class="pb-5">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - ArtClub - <a asp-controller="Home" asp-action="Privacy">Project overview</a>
+    <footer class="border-top footer text-muted bg-light">
+        <div class="container py-3">
+            &copy; 2026 - <strong>ArtClub</strong>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

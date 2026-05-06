@@ -14,7 +14,7 @@ namespace ArtClub.Services.Interfaces
         Task<bool> UpdateEventAsync(string originalTitle, Event model);
         Task<bool> DeleteEventByTitleAsync(string title);
         Task<Resource?> GetResourceByNameAsync(string resourceName);
-
+        Task<List<Event>> GetEventsByOrganizerIdAsync(string userId);
         Task<int?> GetDefaultOrganizerIdAsync();
 
         Task<List<Resource>> GetAllResourcesAsync();

@@ -1,15 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ArtClub.Models.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace ArtClub.DataAccess
 {
-    public class ApplicationDbContext : DbContext
+    // Moștenim IdentityDbContext și specificăm tipul ID-ului ca fiind 'int'
+    public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
 
-        // Tabelele (DbSets)
-        public DbSet<User> Users { get; set; }
+        // Tabelele specifice aplicației (DbSet-ul de User dispare, e gestionat de base)
         public DbSet<Event> Events { get; set; }
         public DbSet<Resource> Resources { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
@@ -20,20 +22,30 @@ namespace ArtClub.DataAccess
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // FOARTE IMPORTANT: Trebuie apelat base.OnModelCreating(modelBuilder) 
+            // pentru a configura tabelele interne ale Identity (AspNetUsers, AspNetRoles, etc.)
             base.OnModelCreating(modelBuilder);
 
-            // Înregistrăm configurațiile din noul namespace
+            // Înregistrăm configurațiile tale
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new EventConfiguration());
 
-            // Cheia compusă pentru tabela de legătură
+            // Cheia compusă pentru tabela de legătură (Eveniment-Piesă Artă)
             modelBuilder.Entity<EventArtPiece>()
                 .HasKey(eap => new { eap.EventId, eap.ArtPieceId });
 
-            //avem grija cu zecimalele
+            // Configurare precizie zecimale pentru SQL Server
             modelBuilder.Entity<Event>()
-                .Property(e => e.Budget)
-                .HasColumnType("decimal(18,2)");
+         .HasOne(e => e.Organizer)
+         .WithMany(u => u.OrganizedEvents)
+         .HasForeignKey(e => e.OrganizerId)
+         .OnDelete(DeleteBehavior.Restrict);
+
+            // Mapare pentru invitații primite
+            modelBuilder.Entity<Invitation>()
+                .HasOne(i => i.Invitee)
+                .WithMany(u => u.ReceivedInvitations)
+                .HasForeignKey(i => i.InviteeId); ;
 
             modelBuilder.Entity<Payment>()
                 .Property(p => p.Amount)

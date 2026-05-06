@@ -1,10 +1,9 @@
 ﻿using ArtClub.Models.Entities;
+using ArtClub.Models.ViewModels;
 using ArtClub.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using ArtClub.Models.ViewModels;
-using ArtClub.Models.Enums;
 
 [Authorize]
 public class InvitationController : Controller
@@ -18,48 +17,58 @@ public class InvitationController : Controller
         _userManager = userManager;
     }
 
-    // Afișează invitațiile primite
+    // Afișează invitațiile primite (Corectat pentru Identity)
     public async Task<IActionResult> Inbox()
     {
-        // Presupunem că avem ID-ul utilizatorului din sesiune sau Identity
-        var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
-        var invitations = await _invitationService.GetUserInboxAsync(userId);
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        // Convertim string Id din Identity în int pentru serviciul tău
+        var invitations = await _invitationService.GetUserInboxAsync(user.Id);
 
         var model = invitations.Select(i => new InvitationInboxViewModel
         {
             InvitationId = i.Id,
-            EventTitle = i.Event.Title,
-            OrganizerName = i.Event.Organizer?.UserName ?? "Artist",
-            EventDate = i.Event.Reservation?.StartTime ?? DateTime.Now,
-            Description = i.Event.Description
+            EventTitle = i.Event?.Title ?? "Eveniment",
+            OrganizerName = i.Event?.Organizer?.UserName ?? "Artist",
+            EventDate = i.Event?.Reservation?.StartTime ?? DateTime.Now,
+            Description = i.Event?.Description
         }).ToList();
 
         return View(model);
     }
 
-    // Procesează acceptarea
+    // Trimitere invitație (Apelată din Event Details)
     [HttpPost]
+    [ValidateAntiForgeryToken]
+   
+    public async Task<IActionResult> Invite(int eventId, int inviteeId, string eventTitle)
+    {
+        var success = await _invitationService.SendInvitationAsync(eventId, inviteeId);
+
+        if (success)
+            TempData["StatusMessage"] = "Invitația a fost trimisă!";
+        else
+            TempData["ErrorMessage"] = "Utilizatorul este deja invitat.";
+
+        // Redirect înapoi la pagina de detalii folosind TITLUL
+        return RedirectToAction("Details", "Event", new { title = eventTitle });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Accept(int id)
     {
         await _invitationService.AcceptInvitationAsync(id);
-        return RedirectToAction(nameof(Inbox));
+        TempData["StatusMessage"] = "Ai acceptat invitația!";
+        return RedirectToAction("MyProfile", "Account");
     }
 
-    // Procesează refuzul
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Decline(int id)
     {
         await _invitationService.DeclineInvitationAsync(id);
-        return RedirectToAction(nameof(Inbox));
-    }
-
-    // Trimitere invitație (apelată din Event Details)
-    [HttpPost]
-    public async Task<IActionResult> Invite(int eventId, int inviteeId)
-    {
-        var success = await _invitationService.SendInvitationAsync(eventId, inviteeId);
-        if (!success) TempData["Error"] = "Utilizatorul este deja invitat.";
-
-        return RedirectToAction("Details", "Event", new { id = eventId });
+        return RedirectToAction("MyProfile", "Account");
     }
 }

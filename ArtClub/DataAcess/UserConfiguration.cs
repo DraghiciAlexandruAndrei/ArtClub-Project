@@ -8,25 +8,30 @@ namespace ArtClub.DataAccess
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            // 1. Cheia Primară
-            builder.HasKey(u => u.Id);
+            // 1. NU configura HasKey(u => u.Id), UserName sau Email. 
+            // IdentityDbContext se ocupă de ele automat. Dacă le forțezi aici, pot apărea conflicte de lungime (Identity vrea 256, tu ai pus 150).
 
-            // 2. Validări de câmpuri (pentru a nu avea surprize în DB)
-            builder.Property(u => u.UserName)
-                   .IsRequired()
-                   .HasMaxLength(50);
+            // 2. Eliminăm Discriminatorul (TPH)
+            // Dacă ai mutat MembershipDate și EventCreationLimit în User, 
+            // nu mai avem nevoie de clasele Member/Admin pentru baza de date. 
+            // Diferențierea o facem prin coloana 'Role'.
 
-            builder.Property(u => u.Email)
-                   .IsRequired()
-                   .HasMaxLength(150);
+            // 3. Configurăm câmpurile tale custom (cele care NU sunt în IdentityUser)
+            builder.Property(u => u.Role)
+                   .IsRequired();
 
-            // 3. Configurarea TPH (Strategia de Moștenire)
-            builder.HasDiscriminator<string>("UserType")
-                   .HasValue<Member>("Member")
-                   .HasValue<Admin>("Admin");
+            builder.Property(u => u.IsMembershipActive)
+                   .HasDefaultValue(false);
 
-            // 4. Index Unic (Recomandat pentru Email)
-            builder.HasIndex(u => u.Email).IsUnique();
+            builder.Property(u => u.EventCreationLimit)
+                   .HasDefaultValue(1);
+
+            // MembershipDate poate fi null (pentru admini de exemplu)
+            builder.Property(u => u.MembershipDate)
+                   .IsRequired(false);
+
+            // 4. Indexul unic pe Email este deja gestionat de Identity, 
+            // dar îl poți lăsa dacă vrei să fii extra-sigur.
         }
     }
 }

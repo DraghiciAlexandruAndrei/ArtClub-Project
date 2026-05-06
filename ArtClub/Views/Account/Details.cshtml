@@ -1,4 +1,5 @@
 ﻿@using ArtClub.Models.Entities
+@using ArtClub.Models.Enums
 @model ArtClub.Models.Entities.User
 
 @{
@@ -27,7 +28,7 @@
                 <p class="mb-1"><strong>Email:</strong> @Model.Email</p>
                 <p class="mb-1">
                     <strong>Role:</strong>
-                    <span class="badge @(Model.Role == ArtClub.Models.Enums.UserRole.Admin ? "bg-danger" : "bg-info")">
+                    <span class="badge @(Model.Role == UserRole.Admin ? "bg-danger" : "bg-info")">
                         @Model.Role
                     </span>
                 </p>
@@ -41,30 +42,33 @@
         </div>
     </div>
 
-    @* --- SECȚIUNE SPECIFICĂ PENTRU TIPUL DE UTILIZATOR --- *@
+    @* --- SECȚIUNE SPECIFICĂ BAZATĂ PE ROL ȘI PROPRIETĂȚI --- *@
     <div class="col-md-6">
-        @if (Model is Member member)
+        @if (Model.Role == UserRole.Member)
         {
             <div class="card mb-3 border-info shadow-sm">
                 <div class="card-header bg-info text-white">
                     <h2 class="h5 mb-0">Member / Artist Details</h2>
                 </div>
                 <div class="card-body">
-                    <p class="mb-1"><strong>Member Since:</strong> @member.MembershipDate.ToShortDateString()</p>
-                    <p class="mb-1"><strong>Event Limit:</strong> @member.EventCreationLimit</p>
-                    <p class="mb-0"><strong>Events Organized:</strong> @(member.OrganizedEvents?.Count ?? 0)</p>
+                    @* Folosim proprietățile mutate în clasa User *@
+                    <p class="mb-1"><strong>Member Since:</strong> @(Model.MembershipDate?.ToShortDateString() ?? "N/A")</p>
+                    <p class="mb-1"><strong>Event Limit:</strong> @Model.EventCreationLimit</p>
+                    <p class="mb-1"><strong>Membership Active:</strong> @(Model.IsMembershipActive ? "Yes" : "No")</p>
+                    <p class="mb-0"><strong>Events Organized:</strong> @(Model.OrganizedEvents?.Count ?? 0)</p>
                 </div>
             </div>
         }
-        else if (Model is Admin admin)
+        else if (Model.Role == UserRole.Admin)
         {
             <div class="card mb-3 border-danger shadow-sm">
                 <div class="card-header bg-danger text-white">
                     <h2 class="h5 mb-0">Administrative Privileges</h2>
                 </div>
                 <div class="card-body">
-                    <p class="mb-1"><strong>Admin Level:</strong> @admin.AdminLevel</p>
-                    <p class="mb-0"><strong>Can Override Reservations:</strong> @(admin.CanOverrideReservations ? "Yes" : "No")</p>
+                    @* Dacă ai păstrat câmpuri specifice de admin în User, le pui aici *@
+                    <p class="mb-1"><strong>System Admin:</strong> Yes</p>
+                    <p class="mb-0"><strong>Full Access:</strong> Guaranteed</p>
                 </div>
             </div>
         }
@@ -73,7 +77,5 @@
 
 <div class="mt-3">
     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit Account</a>
-
-    @* Prevenim ștergerea propriului cont dacă e nevoie *@
     <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">Delete</a>
 </div>
