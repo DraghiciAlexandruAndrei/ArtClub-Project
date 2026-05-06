@@ -12,7 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Configurare Bază de Date (Entity Framework)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString)
+    .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 // 2. Înregistrarea REPOSITORY-URILOR (Data Access Layer)
 // Acestea trebuie înregistrate pentru ca Serviciile să le poată folosi
@@ -54,6 +55,22 @@ builder.Services.AddDefaultIdentity<User>(options => {
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+// Add middleware to handle invalid authentication cookies
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next.Invoke();
+    }
+    catch (ArgumentException ex) when (ex.Message.Contains("is not a valid value for Int32"))
+    {
+        // Clear the invalid authentication cookie and redirect
+        context.Response.Cookies.Delete(".AspNetCore.Identity.Application");
+        context.Response.StatusCode = StatusCodes.Status302Found;
+        context.Response.Redirect("/");
+    }
+});
 
 // 5. Configurare Pipeline HTTP (Middleware)
 if (!app.Environment.IsDevelopment())

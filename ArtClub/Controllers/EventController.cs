@@ -50,6 +50,7 @@ namespace ArtClub.Controllers
         }
 
         // GET: Event/Details/Titlu
+        [Authorize] // Require authentication to view event details
         public async Task<IActionResult> Details(string title)
         {
             if (string.IsNullOrEmpty(title)) return NotFound();
