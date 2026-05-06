@@ -1,6 +1,8 @@
 ﻿using ArtClub.DataAccess.Interfaces;
 using ArtClub.Models.Entities;
+using ArtClub.Models.Enums;
 using ArtClub.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace ArtClub.Services.Implementations
 {
@@ -165,6 +167,17 @@ namespace ArtClub.Services.Implementations
         public async Task<List<Resource>> GetAllResourcesAsync()
         {
             return await _eventRepo.GetAllResourcesAsync(); // Trebuie să existe în IEventRepository
+
+        }
+        public async Task<List<User>> GetAllMembersAsync()
+        {
+            // Presupunând că IUserRepository are o metodă GetAllAsync sau similară
+            var users = await _userRepo.GetAllOrderedByNameAsync();
+
+            // Putem filtra aici membrii dacă repository-ul returnează tot
+            return users
+                .Where(u => u.Role == UserRole.Member)
+                .ToList();
         }
     }
 

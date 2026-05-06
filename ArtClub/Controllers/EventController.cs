@@ -122,6 +122,9 @@ namespace ArtClub.Controllers
             }
         }
 
+        // Adaugă acest folosind contextul dacă nu ai un serviciu de utilizatori dedicat
+        // sau folosește IAccountService dacă ai unul.
+
         public async Task<IActionResult> Details(string title)
         {
             if (string.IsNullOrWhiteSpace(title))
@@ -132,6 +135,14 @@ namespace ArtClub.Controllers
             if (ev == null)
                 return NotFound();
 
+            // --- LOGICA NOUĂ PENTRU INVITAȚII ---
+
+            // 1. Luăm toți utilizatorii care pot fi invitați (Membri)
+            // Înlocuiește cu serviciul tău real dacă ai unul (ex: _accountService.GetAllMembers())
+            var members = await _eventService.GetAllMembersAsync();
+            ViewBag.Users = members;
+
+            // 2. Mapăm datele către ViewModel
             var model = new EventDetailsViewModel
             {
                 EventId = ev.Id,
@@ -139,8 +150,11 @@ namespace ArtClub.Controllers
                 OrganizerName = ev.Organizer != null ? ev.Organizer.UserName : "Unknown organizer",
                 ResourceName = ev.Resource != null ? ev.Resource.Name : "No resource",
                 Date = ev.Reservation != null ? ev.Reservation.StartTime : DateTime.Now,
-                AttendingCount = ev.Invitations != null ? ev.Invitations.Count : 0,
-                ArtPieceNames = new List<string>()
+                AttendingCount = ev.Invitations?.Count(i => i.Status == InvitationStatus.Accepted) ?? 0,
+                ArtPieceNames = new List<string>(), // Aici poți mapa piesele de artă dacă e cazul
+
+                // Adăugăm invitațiile existente pentru a le afișa în tabelul de status
+                Invitations = ev.Invitations?.ToList() ?? new List<Invitation>()
             };
 
             return View(model);
@@ -249,16 +263,6 @@ namespace ArtClub.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Inbox()
-        {
-            var model = new List<InvitationInboxViewModel>();
-            return View(model);
-        }
-
-        public async Task<IActionResult> Cancel(int id)
-        {
-            await _eventService.CancelEventAsync(id);
-            return RedirectToAction(nameof(Index));
-        }
+       
     }
 }

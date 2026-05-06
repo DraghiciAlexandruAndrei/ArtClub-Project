@@ -35,7 +35,8 @@ namespace ArtClub.DataAccess.Repositories
         public async Task AddResourceAsync(Resource resource) => await _context.Resources.AddAsync(resource);
 
         public async Task<List<Reservation>> GetCalendarAsync() =>
-            await _context.Reservations.Include(r => r.Resource).OrderBy(r => r.StartTime).ToListAsync();
+
+            await _context.Reservations.Include(r => r.Resource).OrderBy(r => r.StartTime).Include(r => r.Event).ToListAsync();
 
         public void RemoveResource(Resource resource) => _context.Resources.Remove(resource);
 

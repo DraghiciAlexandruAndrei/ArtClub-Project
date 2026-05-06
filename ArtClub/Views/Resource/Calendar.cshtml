@@ -1,3 +1,5 @@
+@model IEnumerable<ArtClub.Models.Entities.Reservation>
+
 @{
     ViewData["Title"] = "Reservation Calendar";
 }
@@ -5,12 +7,43 @@
 <h1>Reservation Calendar</h1>
 <p class="text-muted">Reservation timeline for selected resources.</p>
 
-<div class="card">
-    <div class="card-body">
-        <ul class="mb-0">
-            <li>Main Hall - reserved</li>
-            <li>Conference Room - available</li>
-            <li>Studio 2 - unavailable</li>
-        </ul>
+@if (Model?.Any() == true)
+{
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Event</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Buffer start</th>
+                        <th>Buffer end</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var reservation in Model)
+                    {
+                        <tr>
+                            <td>@reservation.Resource?.Name</td>
+                            <td>@(reservation.Event?.Title ?? "No linked event")</td>
+                            <td>@reservation.StartTime.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@reservation.EndTime.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@reservation.BufferStart.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@reservation.BufferEnd.ToString("dd.MM.yyyy HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
+}
+else
+{
+    <div class="alert alert-secondary">
+        No reservations are currently registered.
+    </div>
+}
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Back to resources</a>

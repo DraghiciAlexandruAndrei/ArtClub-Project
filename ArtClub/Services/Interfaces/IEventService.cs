@@ -18,5 +18,7 @@ namespace ArtClub.Services.Interfaces
         Task<int?> GetDefaultOrganizerIdAsync();
 
         Task<List<Resource>> GetAllResourcesAsync();
+
+        Task<List<User>> GetAllMembersAsync();
     }
 }

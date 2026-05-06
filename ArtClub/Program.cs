@@ -4,6 +4,7 @@ using ArtClub.DataAccess.Interfaces;
 using ArtClub.DataAccess.Repositories;
 using ArtClub.Services.Interfaces;
 using ArtClub.Services.Implementations;
+using ArtClub.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,7 @@ builder.Services.AddScoped<IArtPieceRepository, ArtPieceRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
 
 // 3. Înregistrarea SERVICIILOR (Business Logic Layer)
 // Înregistrăm mai întâi utilitarele independente
@@ -33,6 +35,8 @@ builder.Services.AddScoped<IFinanceService, FinanceService>();
 // EventService depinde de aproape toate celelalte, deci îl punem la final
 builder.Services.AddScoped<IEventService, EventService>();
 
+builder.Services.AddScoped<IInvitationService, InvitationService>();
+builder.Services.AddHttpContextAccessor(); // trebuie pentru notificări și alte servicii care au nevoie de HttpContext
 // 4. Configurare Servicii de Sistem (Sesiune și MVC)
 builder.Services.AddSession(options =>
 {

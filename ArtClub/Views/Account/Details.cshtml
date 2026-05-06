@@ -1,4 +1,5 @@
-﻿@model ArtClub.Models.Entities.User
+﻿@using ArtClub.Models.Entities
+@model ArtClub.Models.Entities.User
 
 @{
     ViewData["Title"] = "Account details";
@@ -9,20 +10,70 @@
         <h1>Account details</h1>
         <p class="text-muted mb-0">Review user information, role, and status.</p>
     </div>
-
-    <a asp-action="Index" class="btn btn-secondary">Back to accounts</a>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to accounts
+    </a>
 </div>
 
-<div class="card mb-3">
-    <div class="card-body">
-        <h2 class="h5">@Model.UserName</h2>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h2 class="h5 mb-0">General Information</h2>
+            </div>
+            <div class="card-body">
+                <h3 class="h4">@Model.UserName</h3>
+                <hr />
+                <p class="mb-1"><strong>Email:</strong> @Model.Email</p>
+                <p class="mb-1">
+                    <strong>Role:</strong>
+                    <span class="badge @(Model.Role == ArtClub.Models.Enums.UserRole.Admin ? "bg-danger" : "bg-info")">
+                        @Model.Role
+                    </span>
+                </p>
+                <p class="mb-0">
+                    <strong>Status:</strong>
+                    <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
+                        @(Model.IsActive ? "Active" : "Inactive")
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
 
-        <p class="mb-1"><strong>Email:</strong> @Model.Email</p>
-        <p class="mb-1"><strong>Role:</strong> @Model.Role</p>
-        <p class="mb-0"><strong>Status:</strong> @(Model.IsActive ? "Active" : "Inactive")</p>
+    @* --- SECȚIUNE SPECIFICĂ PENTRU TIPUL DE UTILIZATOR --- *@
+    <div class="col-md-6">
+        @if (Model is Member member)
+        {
+            <div class="card mb-3 border-info shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h2 class="h5 mb-0">Member / Artist Details</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Member Since:</strong> @member.MembershipDate.ToShortDateString()</p>
+                    <p class="mb-1"><strong>Event Limit:</strong> @member.EventCreationLimit</p>
+                    <p class="mb-0"><strong>Events Organized:</strong> @(member.OrganizedEvents?.Count ?? 0)</p>
+                </div>
+            </div>
+        }
+        else if (Model is Admin admin)
+        {
+            <div class="card mb-3 border-danger shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="h5 mb-0">Administrative Privileges</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Admin Level:</strong> @admin.AdminLevel</p>
+                    <p class="mb-0"><strong>Can Override Reservations:</strong> @(admin.CanOverrideReservations ? "Yes" : "No")</p>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
-<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
-<a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
-<a asp-action="Index" class="btn btn-secondary">Back</a>
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit Account</a>
+
+    @* Prevenim ștergerea propriului cont dacă e nevoie *@
+    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">Delete</a>
+</div>

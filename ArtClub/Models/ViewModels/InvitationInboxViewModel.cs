@@ -1,12 +1,15 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ArtClub.Models.ViewModels
 {
     public class InvitationInboxViewModel
     {
+        public int InvitationId { get; set; }
         public string EventTitle { get; set; }
-        public string SenderName { get; set; }
-        public string Status { get; set; }
-        public DateTime SentAt { get; set; }
+        public string OrganizerName { get; set; }
+        public DateTime EventDate { get; set; }
+        public string Description { get; set; }
     }
 }

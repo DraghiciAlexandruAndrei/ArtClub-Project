@@ -21,17 +21,38 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item"><a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Dashboard">Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="ArtPiece" asp-action="Index">Art Pieces</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Resource" asp-action="Index">Resources</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Resource" asp-action="Calendar">Calendar</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Event" asp-action="Index">Events</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Event" asp-action="Inbox">Inbox</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Finance" asp-action="Dashboard">Finance</a></li>
+
+                        @* Verificăm dacă utilizatorul este logat prin Session *@
+                        @if (Context.Session.GetInt32("UserId") != null)
+                        {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Dashboard">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Event" asp-action="Index">Events</a></li>
+
+                            @* Link simplu către Inbox *@
+                            <li class="nav-item">
+                                <a class="nav-link text-primary font-weight-bold" asp-controller="Invitation" asp-action="Inbox">
+                                    📩 Invitații
+                                </a>
+                            </li>
+
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="ArtPiece" asp-action="Index">Art Pieces</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Resource" asp-action="Index">Resources</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Finance" asp-action="Dashboard">Finance</a></li>
+                        }
                     </ul>
+
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a></li>
+                        @if (Context.Session.GetInt32("UserId") == null)
+                        {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a></li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-danger" asp-controller="Account" asp-action="Logout">Logout</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

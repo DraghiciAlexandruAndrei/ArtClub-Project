@@ -1,29 +1,92 @@
 @model ArtClub.Models.ViewModels.EventDetailsViewModel
-@{
-    ViewData["Title"] = "Event Details";
-}
+@using ArtClub.Models.Enums
 
-<div class="card">
-    <div class="card-body">
-        <h1 class="h3">@Model?.Title</h1>
-        <p><strong>Organizer:</strong> @Model?.OrganizerName</p>
-        <p><strong>Resource:</strong> @Model?.ResourceName</p>
-        <p><strong>Date:</strong> @Model?.Date.ToString("dd MMM yyyy")</p>
-        <p><strong>Attending members:</strong> @Model?.AttendingCount</p>
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h1 class="h3 mb-0">@Model.Title</h1>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Organizer:</strong> @Model.OrganizerName</p>
+                    <p><strong>Resource:</strong> @Model.ResourceName</p>
+                    <p><strong>Date:</strong> @Model.Date.ToString("dd MMM yyyy")</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="badge bg-primary fs-6">
+                        Attending: @Model.AttendingCount
+                    </div>
+                </div>
+            </div>
 
-        <h2 class="h5 mt-4">Displayed art pieces</h2>
-        @if (Model?.ArtPieceNames?.Any() == true)
-        {
-            <ul>
-                @foreach (var item in Model.ArtPieceNames)
-                {
-                    <li>@item</li>
-                }
-            </ul>
-        }
-        else
-        {
-            <p class="text-muted mb-0">No related art pieces are listed.</p>
-        }
+            <hr />
+
+            <!-- Secțiune Invită Artiști -->
+            <h4 class="mt-4">Invită Artiști</h4>
+            <form asp-controller="Invitation" asp-action="Invite" method="post" class="row g-3 align-items-center">
+                <input type="hidden" name="eventId" value="@Model.EventId" />
+                <div class="col-sm-6">
+                    <select name="inviteeId" class="form-select" required>
+                        <option value="">-- Selectează un artist --</option>
+                        @foreach (var user in (List<ArtClub.Models.Entities.User>)ViewBag.Users)
+                        {
+                            <option value="@user.Id">@user.UserName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-sm-3">
+                    <button type="submit" class="btn btn-success w-100">Trimite Invitația</button>
+                </div>
+            </form>
+
+            <hr />
+
+            <!-- Lista de Invitații trimise -->
+            <h4 class="mt-4">Status Invitații</h4>
+            @if (Model.Invitations != null && Model.Invitations.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Artist</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var inv in Model.Invitations)
+                            {
+                                <tr>
+                                    <td>@inv.Invitee?.UserName</td>
+                                    <td>
+                                        @if (inv.Status == InvitationStatus.Accepted)
+                                        {
+                                            <span class="badge bg-success">Accepted</span>
+                                        }
+                                        else if (inv.Status == InvitationStatus.Declined)
+                                        {
+                                            <span class="badge bg-danger">Declined</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">Nu a fost invitat nimeni încă.</p>
+            }
+
+            <div class="mt-4">
+                <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+            </div>
+        </div>
     </div>
 </div>
