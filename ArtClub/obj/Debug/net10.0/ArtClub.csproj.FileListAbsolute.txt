@@ -267,7 +267,6 @@ D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\ArtClub.pdb
 D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\ArtClub.genruntimeconfig.cache
 D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\ref\ArtClub.dll
 D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\ArtClub.sourcelink.json
-D:\C#\ProiectBD\ArtClub\ArtClub\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
 D:\C#\ProiectBD\ArtClub\ArtClub\bin\Debug\net10.0\PdfSharp.Charting.dll
 D:\C#\ProiectBD\ArtClub\ArtClub\bin\Debug\net10.0\PdfSharp.Quality.dll
 D:\C#\ProiectBD\ArtClub\ArtClub\bin\Debug\net10.0\PdfSharp.Snippets.dll
