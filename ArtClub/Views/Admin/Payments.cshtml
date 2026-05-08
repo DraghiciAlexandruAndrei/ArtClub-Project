@@ -1,0 +1,86 @@
+@model IEnumerable<ArtClub.Models.Entities.Payment>
+
+@{
+    ViewData["Title"] = "Payments";
+}
+
+<h1>Payments</h1>
+
+<form asp-action="Payments" method="get" class="row g-2 my-3">
+    <div class="col-md-2">
+        <input type="number" name="userId" value="@Context.Request.Query["userId"]"
+               class="form-control" placeholder="User ID" />
+    </div>
+    <div class="col-md-2">
+        <input type="date" name="from" value="@Context.Request.Query["from"]"
+               class="form-control" />
+    </div>
+    <div class="col-md-2">
+        <input type="date" name="to" value="@Context.Request.Query["to"]"
+               class="form-control" />
+    </div>
+    <div class="col-md-2">
+        <select name="isIncome" class="form-select">
+        @{
+            var incomeFilter = Context.Request.Query["isIncome"].ToString();
+        }
+        <option value="">All</option>
+        @if (incomeFilter == "true")
+        {
+            <option value="true" selected>Income</option>
+            <option value="false">Expense</option>
+        }
+        else if (incomeFilter == "false")
+        {
+            <option value="true">Income</option>
+            <option value="false" selected>Expense</option>
+        }
+        else
+        {
+            <option value="true">Income</option>
+            <option value="false">Expense</option>
+        }
+    </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a asp-action="Payments" class="btn btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
+<table class="table table-striped table-hover align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>User ID</th>
+            <th>Amount (lei)</th>
+            <th>Type</th>
+            <th>Income?</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var p in Model)
+    {
+        <tr>
+            <td>@p.Id</td>
+            <td>@p.UserId</td>
+            <td>@p.Amount.ToString("N2")</td>
+            <td>@p.Type</td>
+            <td>
+                @if (p.IsIncome)
+                {
+                    <span class="badge bg-success">Income</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger">Expense</span>
+                }
+            </td>
+            <td>@p.Date.ToString("dd.MM.yyyy HH:mm")</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary mt-2">← Back to Dashboard</a>

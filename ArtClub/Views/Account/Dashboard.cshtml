@@ -1,0 +1,110 @@
+@model ArtClub.Models.ViewModels.MemberDashboardViewModel
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Salut, @Model.UserName! 👋</h2>
+        <div>
+            @if (!User.IsInRole("Admin") && !Model.IsMembershipActive)
+            {
+                <form asp-action="BecomeMember" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-warning fw-bold shadow-sm">
+                        <i class="bi bi-star-fill me-1"></i> Upgrade la Membru
+                    </button>
+                </form>
+            }
+            <a asp-controller="Event" asp-action="Create" class="btn btn-primary shadow-sm ms-2">
+                <i class="bi bi-plus-circle me-1"></i> Crează Eveniment
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistici Rapide -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-primary text-white p-3">
+                <small>Evenimente Organizate</small>
+                <h3 class="fw-bold">@Model.EventsOrganizedCount</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-success text-white p-3">
+                <small>Invitații Noi</small>
+                <h3 class="fw-bold">@Model.PendingInvitationsCount</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-info text-white p-3">
+                <small>Limită Disponibilă</small>
+                <h3 class="fw-bold">@Model.RemainingEventLimit</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm @(Model.IsMembershipActive ? "bg-light-success" : "bg-light") p-3">
+                <small>Status Abonament</small>
+                <h3 class="fw-bold fs-5">@(Model.IsMembershipActive ? "ACTIV" : "STANDARD")</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Coloana Stânga: Invitații Recente -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-envelope me-2"></i>Invitații Recente</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentInvitations.Any())
+                    {
+                        @foreach (var inv in Model.RecentInvitations)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-3 p-2 border-bottom">
+                                <div>
+                                    <div class="fw-bold">@inv.EventTitle</div>
+                                    <small class="text-muted">De la @inv.OrganizerName</small>
+                                </div>
+                                <a asp-controller="Account" asp-action="MyProfile" class="btn btn-sm btn-outline-primary">Vezi</a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center my-4">Nicio invitație nouă.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Coloana Dreapta: Evenimentele Mele Viitoare -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 text-white" style="background-color: #6366f1 !important;">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-check me-2"></i>Evenimente Viitoare</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.UpcomingEvents.Any())
+                    {
+                        @foreach (var ev in Model.UpcomingEvents)
+                        {
+                            <div class="mb-3 p-2 border-start border-primary border-4 bg-light">
+                                <div class="fw-bold">@ev.Title</div>
+                                <small class="d-block"><i class="bi bi-geo-alt"></i> @ev.ResourceName</small>
+                                <small class="d-block text-primary fw-bold">@ev.StartDate.ToString("dd MMM, HH:mm")</small>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center my-4">Nu ai evenimente programate.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-light-success { background-color: #d1fae5; color: #065f46; }
+    .card { transition: 0.3s; }
+    .card:hover { transform: translateY(-5px); }
+</style>

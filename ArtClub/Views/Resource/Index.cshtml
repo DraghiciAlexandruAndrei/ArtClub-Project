@@ -1,0 +1,69 @@
+﻿@model IEnumerable<ArtClub.Models.ViewModels.ResourceOverviewViewModel>
+
+@{
+    ViewData["Title"] = "Resources";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1>Resources</h1>
+        <p class="text-muted mb-0">Rooms and spaces with availability status, capacity, and location.</p>
+    </div>
+
+    <div>
+        <a asp-action="Calendar" class="btn btn-outline-secondary">View calendar</a>
+        <a asp-action="Create" class="btn btn-primary">Add resource</a>
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="row g-3">
+        @foreach (var resource in Model)
+        {
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">@resource.Name</h2>
+
+                        <p class="mb-1"><strong>Type:</strong> @resource.Type</p>
+                        <p class="mb-1"><strong>Capacity:</strong> @resource.Capacity</p>
+                        <p class="mb-1"><strong>Location:</strong> @resource.Location</p>
+
+                        <p class="mb-3">
+                            <strong>Status:</strong>
+                            @if (resource.Status == "Available")
+                            {
+                                <span class="badge bg-success">@resource.Status</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">@resource.Status</span>
+                            }
+                        </p>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a asp-action="Details" asp-route-name="@resource.Name" class="btn btn-sm btn-outline-primary">
+                                Details
+                            </a>
+
+                            <a asp-action="Edit" asp-route-name="@resource.Name" class="btn btn-sm btn-outline-secondary">
+                                Edit
+                            </a>
+
+                            <a asp-action="Delete" asp-route-name="@resource.Name" class="btn btn-sm btn-outline-danger">
+                                Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-secondary">
+        No resources are available yet.
+    </div>
+}

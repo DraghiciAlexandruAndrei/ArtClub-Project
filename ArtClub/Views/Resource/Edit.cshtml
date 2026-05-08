@@ -1,0 +1,61 @@
+﻿@model ArtClub.Models.Entities.Resource
+
+@{
+    ViewData["Title"] = "Edit resource";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1>Edit resource</h1>
+        <p class="text-muted mb-0">Update the resource information used for event planning and reservations.</p>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary">Back to resources</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Edit" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="originalName" value="@Model.Name" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="col-12">
+                <label asp-for="Name" class="form-label">Resource name</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="col-12">
+                <label asp-for="Description" class="form-label">Description / Type</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+                <div class="form-text">This field is displayed as the resource type in the resource list.</div>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Capacity" class="form-label">Capacity</label>
+                <input asp-for="Capacity" type="number" min="1" class="form-control" />
+                <span asp-validation-for="Capacity" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="BasePrice" class="form-label">Base price</label>
+                <input asp-for="BasePrice" type="number" min="0" step="0.01" class="form-control" />
+                <span asp-validation-for="BasePrice" class="text-danger"></span>
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Save changes</button>
+                <a asp-action="Details" asp-route-name="@Model.Name" class="btn btn-outline-secondary">View details</a>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

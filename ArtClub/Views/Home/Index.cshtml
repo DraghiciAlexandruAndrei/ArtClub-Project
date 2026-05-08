@@ -1,0 +1,54 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+@* Updated placeholder UI for ArtClub v0.3. *@
+<div class="p-5 mb-4 bg-light rounded-3">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Art Club Management System</h1>
+        <p class="col-md-8 fs-5">A web application for members, resources, events, reservations, and financial reporting.</p>
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary btn-lg" asp-controller="Account" asp-action="Register">Create account</a>
+            <a class="btn btn-outline-secondary btn-lg" asp-controller="Account" asp-action="Login">Sign in</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Members</h5>
+                <p class="card-text">Registration, login, and profile access.</p>
+                <a asp-controller="Account" asp-action="Dashboard" class="btn btn-sm btn-primary">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Resources</h5>
+                <p class="card-text">Rooms, availability, and reservation calendar.</p>
+                <a asp-controller="Resource" asp-action="Index" class="btn btn-sm btn-primary">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Events</h5>
+                <p class="card-text">Event creation, invitations, and attendance.</p>
+                <a asp-controller="Event" asp-action="Index" class="btn btn-sm btn-primary">Open</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Finance</h5>
+                <p class="card-text">Income, expenses, and monthly reports.</p>
+                <a asp-controller="Finance" asp-action="Dashboard" class="btn btn-sm btn-primary">Open</a>
+            </div>
+        </div>
+    </div>
+</div>

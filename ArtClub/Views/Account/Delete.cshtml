@@ -1,0 +1,38 @@
+﻿@model ArtClub.Models.Entities.User
+
+@{
+    ViewData["Title"] = "Delete account";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1>Delete account</h1>
+        <p class="text-muted mb-0">Confirm removal of this user account.</p>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary">Back to accounts</a>
+</div>
+
+<div class="alert alert-danger">
+    <strong>Warning:</strong> This action will delete the selected account.
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h2 class="h5">@Model.UserName</h2>
+
+        <p class="mb-1"><strong>Email:</strong> @Model.Email</p>
+        <p class="mb-1"><strong>Role:</strong> @Model.Role</p>
+        <p class="mb-0"><strong>Status:</strong> @(Model.IsActive ? "Active" : "Inactive")</p>
+    </div>
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <button type="submit" class="btn btn-danger">Delete account</button>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">View details</a>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
