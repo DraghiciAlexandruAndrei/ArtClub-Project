@@ -1,0 +1,56 @@
+@model IEnumerable<ArtClub.Models.Entities.Resource>
+
+@{
+    ViewData["Title"] = "Exhibition Halls";
+}
+
+<h1>Exhibition Halls Management</h1>
+
+<p>
+    <a asp-action="CreateResource" class="btn btn-primary">+ Create New Exhibition Hall</a>
+</p>
+
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["StatusMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<table class="table table-striped table-hover align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Capacity</th>
+            <th>Base Price (lei)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var hall in Model)
+    {
+        <tr>
+            <td>@hall.Id</td>
+            <td>@hall.Name</td>
+            <td>@hall.Description</td>
+            <td>@hall.Capacity</td>
+            <td>@hall.BasePrice.ToString("N2")</td>
+            <td class="d-flex gap-1 flex-wrap">
+                <a asp-action="EditResource" asp-route-id="@hall.Id"
+                   class="btn btn-sm btn-outline-primary">Edit</a>
+                <form asp-action="DeleteResource" method="post" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@hall.Id" />
+                    <button type="submit" class="btn btn-sm btn-danger"
+                            onclick="return confirm('Delete this exhibition hall?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary mt-2">← Back to Dashboard</a>

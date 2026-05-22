@@ -1,0 +1,69 @@
+@using ArtClub.Models.Enums
+
+@{
+    ViewData["Title"] = "Resource Availability Report";
+    var startDate = (DateTime)ViewBag.StartDate;
+    var endDate = (DateTime)ViewBag.EndDate;
+}
+
+<h1>Resource Availability Report</h1>
+
+<form asp-action="ResourceAvailabilityReport" method="get" class="row g-2 my-3">
+    <div class="col-md-3">
+        <label for="startDate" class="form-label">Start Date:</label>
+        <input type="date" id="startDate" name="startDate" value="@startDate.ToString("yyyy-MM-dd")"
+               class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label for="endDate" class="form-label">End Date:</label>
+        <input type="date" id="endDate" name="endDate" value="@endDate.ToString("yyyy-MM-dd")"
+               class="form-control" />
+    </div>
+    <div class="col-auto d-flex align-items-end">
+        <button type="submit" class="btn btn-primary">Generate Report</button>
+    </div>
+</form>
+
+<hr />
+
+<div class="alert alert-info">
+    <strong>Report Period:</strong> @startDate.ToString("dd.MM.yyyy") to @endDate.ToString("dd.MM.yyyy")
+</div>
+
+<table class="table table-striped table-hover align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Resource ID</th>
+            <th>Resource Name</th>
+            <th>Status</th>
+            <th>Conflicts</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        var isAvailable = (bool)item.GetType().GetProperty("IsAvailable").GetValue(item);
+        var resourceName = item.GetType().GetProperty("ResourceName").GetValue(item).ToString();
+        var resourceId = item.GetType().GetProperty("ResourceId").GetValue(item);
+        var conflictCount = item.GetType().GetProperty("ConflictCount").GetValue(item);
+
+        <tr>
+            <td>@resourceId</td>
+            <td>@resourceName</td>
+            <td>
+                @if (isAvailable)
+                {
+                    <span class="badge bg-success">Available</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger">Unavailable</span>
+                }
+            </td>
+            <td>@conflictCount</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary mt-2">← Back to Dashboard</a>

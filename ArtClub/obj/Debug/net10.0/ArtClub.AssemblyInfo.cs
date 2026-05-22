@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ArtClub")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+68d0a1499781ab69c9f732e3091835f98d75ab81")]
 [assembly: System.Reflection.AssemblyProductAttribute("ArtClub")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ArtClub")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

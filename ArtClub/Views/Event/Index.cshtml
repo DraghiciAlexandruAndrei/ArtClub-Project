@@ -1,4 +1,4 @@
-﻿@model IEnumerable<ArtClub.Models.ViewModels.EventSummaryViewModel>
+﻿@model IEnumerable<ArtClub.Models.ViewModels.Event.EventSummaryViewModel>
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor HttpContextAccessor
 
@@ -51,6 +51,14 @@
                             <p class="mb-1"><strong><i class="bi bi-geo-alt"></i> Resource:</strong> @item.ResourceName</p>
                             <p class="mb-1"><strong><i class="bi bi-calendar3"></i> Date:</strong> @item.StartDate.ToString("dd MMM yyyy")</p>
                             <p class="mb-3"><strong><i class="bi bi-people"></i> Invitations:</strong> @item.InviteCount</p>
+
+                            @if (item.ReservationStatus.HasValue)
+                            {
+                                <p class="mb-3">
+                                    <strong><i class="bi bi-bookmark"></i> Reservation:</strong>
+                                    <span class="@item.ReservationStatusBadgeClass">@item.ReservationStatusLabel</span>
+                                </p>
+                            }
                         </div>
 
                         @* REPARAȚIA AICI: Folosim ID-ul real al evenimentului *@

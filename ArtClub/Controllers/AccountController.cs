@@ -1,6 +1,7 @@
 ﻿using ArtClub.Models.Entities;
 using ArtClub.Models.Enums;
-using ArtClub.Models.ViewModels;
+using ArtClub.Models.ViewModels.Account;
+using ArtClub.Models.ViewModels.Event;
 using ArtClub.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

@@ -9,15 +9,15 @@
 <form asp-action="Payments" method="get" class="row g-2 my-3">
     <div class="col-md-2">
         <input type="number" name="userId" value="@Context.Request.Query["userId"]"
-               class="form-control" placeholder="User ID" />
+               class="form-control" placeholder="Member ID" />
     </div>
     <div class="col-md-2">
         <input type="date" name="from" value="@Context.Request.Query["from"]"
-               class="form-control" />
+               class="form-control" placeholder="From Date" />
     </div>
     <div class="col-md-2">
         <input type="date" name="to" value="@Context.Request.Query["to"]"
-               class="form-control" />
+               class="form-control" placeholder="To Date" />
     </div>
     <div class="col-md-2">
         <select name="isIncome" class="form-select">

@@ -19,6 +19,7 @@ namespace ArtClub.DataAccess
         public DbSet<EventArtPiece> EventArtPieces { get; set; }
         public DbSet<Invitation> Invitations { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<ClubSettings> ClubSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,6 +54,22 @@ namespace ArtClub.DataAccess
 
             modelBuilder.Entity<Resource>()
                 .Property(r => r.BasePrice)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<ClubSettings>()
+                .Property(cs => cs.NonMemberReservationFeePerDay)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<ClubSettings>()
+                .Property(cs => cs.MembershipCost)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<ClubSettings>()
+                .Property(cs => cs.EventCostPerArtPiece)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<ClubSettings>()
+                .Property(cs => cs.EventCostPerLocation)
                 .HasColumnType("decimal(18,2)");
         }
     }

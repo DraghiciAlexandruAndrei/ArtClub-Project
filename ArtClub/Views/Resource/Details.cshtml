@@ -31,7 +31,8 @@
                     @{
                         var isReservedNow = Model.Reservations != null && Model.Reservations.Any(res =>
                             res.StartTime.AddDays(-1) <= DateTime.Now &&
-                            res.EndTime.AddDays(1) >= DateTime.Now);
+                            res.EndTime.AddDays(1) >= DateTime.Now &&
+                            res.Status != ArtClub.Models.Enums.ReservationStatus.Cancelled);
                     }
                     @(isReservedNow ? "Reserved" : "Available")
                 </p>
@@ -56,16 +57,38 @@
                 <th>End time</th>
                 <th>Buffer starts</th>
                 <th>Buffer ends</th>
+                <th>Status</th>
+                <th>Type</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var res in Model.Reservations.OrderBy(r => r.StartTime))
             {
+                var statusBadgeClass = res.Status switch
+                {
+                    ArtClub.Models.Enums.ReservationStatus.Confirmed => "badge bg-success",
+                    ArtClub.Models.Enums.ReservationStatus.PendingApproval => "badge bg-warning text-dark",
+                    ArtClub.Models.Enums.ReservationStatus.OverrideRequired => "badge bg-danger",
+                    ArtClub.Models.Enums.ReservationStatus.Cancelled => "badge bg-secondary",
+                    _ => "badge bg-secondary"
+                };
+
+                var statusLabel = res.Status switch
+                {
+                    ArtClub.Models.Enums.ReservationStatus.Confirmed => "Confirmed",
+                    ArtClub.Models.Enums.ReservationStatus.PendingApproval => "Pending Approval",
+                    ArtClub.Models.Enums.ReservationStatus.OverrideRequired => "Reschedule Required",
+                    ArtClub.Models.Enums.ReservationStatus.Cancelled => "Cancelled",
+                    _ => "Unknown"
+                };
+
                 <tr>
                     <td>@res.StartTime.ToString("dd.MM.yyyy HH:mm")</td>
                     <td>@res.EndTime.ToString("dd.MM.yyyy HH:mm")</td>
                     <td>@res.StartTime.AddDays(-1).ToString("dd.MM.yyyy HH:mm")</td>
                     <td>@res.EndTime.AddDays(1).ToString("dd.MM.yyyy HH:mm")</td>
+                    <td><span class="@statusBadgeClass">@statusLabel</span></td>
+                    <td>@(res.IsAdminOverride ? "Admin Override" : "Regular")</td>
                 </tr>
             }
         </tbody>

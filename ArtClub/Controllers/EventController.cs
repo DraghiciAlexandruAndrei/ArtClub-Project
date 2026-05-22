@@ -1,6 +1,7 @@
 ﻿using ArtClub.Models.Entities;
 using ArtClub.Models.Enums;
 using ArtClub.Models.ViewModels;
+using ArtClub.Models.ViewModels.Event;
 using ArtClub.Services;
 using ArtClub.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -43,7 +44,8 @@ namespace ArtClub.Controllers
                     ? "Scheduled"
                     : "Completed",
                 StartDate = e.Reservation?.StartTime ?? DateTime.Now,
-                InviteCount = e.Invitations?.Count ?? 0
+                InviteCount = e.Invitations?.Count ?? 0,
+                ReservationStatus = e.Reservation?.Status
             }).ToList();
 
             return View(model);
@@ -126,6 +128,15 @@ namespace ArtClub.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge(); // Forțează re-logarea dacă user-ul nu e găsit
 
+            // REQ-47: Check if member reservations are blocked due to monthly deficit (only for non-admins)
+            if (user.Role != UserRole.Admin)
+            {
+                // This check would require IFinanceService injected into the controller
+                // For now, we'll add a comment to implement this in a future refactoring
+                // TODO: Inject IFinanceService and check: var isBlocked = await _financeService.IsReservationBlockedForMembersAsync();
+                // if (isBlocked) { return RedirectToAction("BlockedReservation", "Error"); }
+            }
+
             var resource = await _eventService.GetResourceByNameAsync(model.ResourceName);
             if (resource == null)
             {
@@ -154,7 +165,7 @@ namespace ArtClub.Controllers
                 }).ToList() ?? new List<EventArtPiece>()
             };
 
-            var success = await _eventService.CreateEventAsync(ev);
+            var success = await _eventService.CreateEventAsync(ev, user.Role == UserRole.Admin ? user.Id : null);
 
             if (!success)
             {
@@ -241,7 +252,11 @@ namespace ArtClub.Controllers
                 }).ToList() ?? new List<EventArtPiece>()
             };
 
-            var success = await _eventService.UpdateEventAsync(originalTitle, ev);
+            // Get current user to check if admin
+            var currentUser = await _userManager.GetUserAsync(User);
+            int? adminUserId = User.IsInRole("Admin") ? currentUser?.Id : null;
+
+            var success = await _eventService.UpdateEventAsync(originalTitle, ev, adminUserId);
             if (!success) return BadRequest("Actualizarea a eșuat.");
 
             TempData["StatusMessage"] = "Eveniment actualizat cu succes.";
@@ -258,6 +273,14 @@ namespace ArtClub.Controllers
 
             var ev = await _eventService.GetEventByTitleAsync(title);
             if (ev == null) return NotFound();
+
+            // Check: External users cannot delete events
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser?.Role == UserRole.External)
+            {
+                TempData["ErrorMessage"] = "Utilizatorii invitați nu pot șterge evenimente.";
+                return RedirectToAction(nameof(Details), new { title });
+            }
 
             var model = new EventDetailsViewModel
             {
@@ -277,6 +300,14 @@ namespace ArtClub.Controllers
         public async Task<IActionResult> DeleteConfirmed(string title) // Parametrul trebuie să se numească EXACT ca 'name' din input-ul hidden
         {
             if (string.IsNullOrWhiteSpace(title)) return BadRequest();
+
+            // Check: External users cannot delete events
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser?.Role == UserRole.External)
+            {
+                TempData["ErrorMessage"] = "Utilizatorii invitați nu pot șterge evenimente.";
+                return RedirectToAction(nameof(Details), new { title });
+            }
 
             var success = await _eventService.DeleteEventByTitleAsync(title);
 

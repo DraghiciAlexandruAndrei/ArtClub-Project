@@ -32,5 +32,16 @@ namespace ArtClub.Services.Interfaces
         /// Calculează taxa de rezervare pentru non-membri (400 lei/zi).
         /// </summary>
         decimal CalculateNonMemberReservationFee(int days);
+
+        /// <summary>
+        /// REQ-44: Calculates non-member reservation fee using configurable ClubSettings from database.
+        /// </summary>
+        Task<decimal> CalculateNonMemberReservationFeeAsync(int days);
+
+        /// <summary>
+        /// REQ-47: Checks if member reservations are blocked due to monthly deficit.
+        /// Returns true if last month's expenses exceed income (blocks non-admin reservations).
+        /// </summary>
+        Task<bool> IsReservationBlockedForMembersAsync();
     }
 }
