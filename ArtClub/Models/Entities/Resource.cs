@@ -10,6 +10,11 @@ namespace ArtClub.Models.Entities
         public int Capacity { get; set; }
         public decimal BasePrice { get; set; }
 
+        /// <summary>
+        /// REQ-22: Flag to mark this resource as an exhibition hall for timed events.
+        /// </summary>
+        public bool IsExhibitionHall { get; set; } = false;
+
         // Proprietăți de navigare (Relațiile din diagrama ta)
 
         // O resursă poate avea mai multe rezervări în timp

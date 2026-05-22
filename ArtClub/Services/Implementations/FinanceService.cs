@@ -1,6 +1,8 @@
-﻿using ArtClub.DataAccess.Interfaces;
+﻿using ArtClub.DataAccess;
+using ArtClub.DataAccess.Interfaces;
 using ArtClub.Models.Entities;
 using ArtClub.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 
@@ -10,11 +12,32 @@ namespace ArtClub.Services.Implementations
     {
         private readonly IPaymentRepository _paymentRepo;
         private readonly IUserRepository _userRepo;
+        private readonly ApplicationDbContext _context;
 
-        public FinanceService(IPaymentRepository paymentRepo, IUserRepository userRepo)
+        public FinanceService(IPaymentRepository paymentRepo, IUserRepository userRepo, ApplicationDbContext context)
         {
             _paymentRepo = paymentRepo;
             _userRepo = userRepo;
+            _context = context;
+        }
+
+        // ============================================================
+        // CLUBSETTINGS MANAGEMENT (REQ-44)
+        // ============================================================
+
+        /// <summary>
+        /// Gets or creates the singleton ClubSettings entity.
+        /// </summary>
+        private async Task<ClubSettings> GetOrCreateClubSettingsAsync()
+        {
+            var settings = await _context.ClubSettings.FirstOrDefaultAsync();
+            if (settings == null)
+            {
+                settings = new ClubSettings();
+                await _context.ClubSettings.AddAsync(settings);
+                await _context.SaveChangesAsync();
+            }
+            return settings;
         }
 
         // ============================================================
@@ -67,6 +90,35 @@ namespace ArtClub.Services.Implementations
         {
             // 400 lei/zi conform cerințelor pentru non-membri
             return days * 400;
+        }
+
+        /// <summary>
+        /// REQ-44: Calculates non-member reservation fee using configurable ClubSettings.
+        /// </summary>
+        public async Task<decimal> CalculateNonMemberReservationFeeAsync(int days)
+        {
+            var settings = await GetOrCreateClubSettingsAsync();
+            return days * settings.NonMemberReservationFeePerDay;
+        }
+
+        // ==========================================
+        // REQ-47: MONTHLY DEFICIT RULE
+        // ==========================================
+
+        /// <summary>
+        /// REQ-47: Checks if member reservations are blocked due to monthly deficit.
+        /// Returns true if last month's expenses exceed income (blocked for non-admins).
+        /// </summary>
+        public async Task<bool> IsReservationBlockedForMembersAsync()
+        {
+            var now = DateTime.Now;
+            var lastMonth = now.Month == 1 ? 12 : now.Month - 1;
+            var lastMonthYear = now.Month == 1 ? now.Year - 1 : now.Year;
+
+            var income = await _paymentRepo.GetSumAsync(lastMonth, lastMonthYear, true);
+            var expenses = await _paymentRepo.GetSumAsync(lastMonth, lastMonthYear, false);
+
+            return expenses > income;
         }
 
         // ==========================================

@@ -1,6 +1,6 @@
 ﻿using ArtClub.Models.Entities;
 using ArtClub.Models.Enums;
-using ArtClub.Models.ViewModels;
+using ArtClub.Models.ViewModels.Finance;
 using ArtClub.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

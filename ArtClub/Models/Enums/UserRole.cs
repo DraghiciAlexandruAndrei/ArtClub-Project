@@ -2,8 +2,8 @@
 {
     public enum UserRole
     {
-        Admin =1,
-        Member =2,
-        Guest =3 
+        Admin = 1,
+        Member = 2,
+        External = 3
     }
 }

@@ -50,6 +50,37 @@ namespace ArtClub.Migrations
                     b.ToTable("ArtPieces");
                 });
 
+            modelBuilder.Entity("ArtClub.Models.Entities.ClubSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("EventCostPerArtPiece")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("EventCostPerLocation")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("MembershipCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("NonMemberReservationFeePerDay")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("PendingOverrideApprovalHours")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ClubSettings");
+                });
+
             modelBuilder.Entity("ArtClub.Models.Entities.Event", b =>
                 {
                     b.Property<int>("Id")
@@ -178,17 +209,29 @@ namespace ArtClub.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AdminOverrideById")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("EventId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsAdminOverride")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("OverrideCreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("ResourceId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -218,6 +261,9 @@ namespace ArtClub.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsExhibitionHall")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()

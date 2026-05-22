@@ -2,14 +2,23 @@
 
 @{
     ViewData["Title"] = "Manage Users";
+    var selectedRole = ViewBag.RoleFilter?.ToString();
 }
 
 <h1>Manage Users</h1>
 
 <form asp-action="Users" method="get" class="row g-2 my-3">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <input type="text" name="search" value="@ViewBag.Search"
-               class="form-control" placeholder="Search by name or email" />
+               class="form-control" placeholder="Search by ID, name or email" />
+    </div>
+    <div class="col-md-3">
+        <select name="roleFilter" class="form-select">
+            <option value="" selected="@(string.IsNullOrEmpty(selectedRole))">All Roles</option>
+            <option value="Admin" selected="@(selectedRole == "Admin")">Admin</option>
+            <option value="Member" selected="@(selectedRole == "Member")">Member</option>
+            <option value="External" selected="@(selectedRole == "External")">External</option>
+        </select>
     </div>
     <div class="col-auto">
         <button type="submit" class="btn btn-primary">Search</button>

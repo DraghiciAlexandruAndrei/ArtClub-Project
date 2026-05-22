@@ -1,5 +1,6 @@
 ﻿using ArtClub.Models.Entities;
 using ArtClub.Models.ViewModels;
+using ArtClub.Models.ViewModels.Resource;
 using ArtClub.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

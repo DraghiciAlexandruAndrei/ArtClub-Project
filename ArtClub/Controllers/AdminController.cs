@@ -2,6 +2,8 @@ using ArtClub.DataAccess;
 using ArtClub.Models.Entities;
 using ArtClub.Models.Enums;
 using ArtClub.Models.ViewModels;
+using ArtClub.Models.ViewModels.Admin;
+using ArtClub.Models.ViewModels.Finance;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +42,7 @@ namespace ArtClub.Controllers
             return View(vm);
         }
 
-        public async Task<IActionResult> Users(string? search)
+        public async Task<IActionResult> Users(string? search, UserRole? roleFilter)
         {
             var query = _context.Users.AsQueryable();
 
@@ -48,12 +50,20 @@ namespace ArtClub.Controllers
             {
                 var s = search.ToLower();
                 query = query.Where(u =>
+                    (u.Id.ToString() == s) || // REQ-9: Search by User ID (MembershipID)
                     (u.UserName != null && u.UserName.ToLower().Contains(s)) ||
                     (u.Email != null && u.Email.ToLower().Contains(s)));
             }
 
+            // REQ-9: Filter by role
+            if (roleFilter.HasValue)
+            {
+                query = query.Where(u => u.Role == roleFilter.Value);
+            }
+
             var users = await query.ToListAsync();
             ViewBag.Search = search;
+            ViewBag.RoleFilter = roleFilter;
             return View(users);
         }
 
@@ -233,6 +243,29 @@ namespace ArtClub.Controllers
             return RedirectToAction(nameof(Resources));
         }
 
+        /// <summary>
+        /// REQ-22: Admin Exhibition Halls Management - Timed resources for exhibitions.
+        /// </summary>
+        public async Task<IActionResult> ExhibitionHalls()
+        {
+            var exhibitionHalls = await _context.Resources
+                .Where(r => r.IsExhibitionHall)
+                .ToListAsync();
+            return View(exhibitionHalls);
+        }
+
+        /// <summary>
+        /// REQ-36: Admin Location Management - Affiliated event locations.
+        /// </summary>
+        public async Task<IActionResult> Locations()
+        {
+            // Locations are treated as non-exhibition resources
+            var locations = await _context.Resources
+                .Where(r => !r.IsExhibitionHall)
+                .ToListAsync();
+            return View(locations);
+        }
+
         [HttpGet]
         public async Task<IActionResult> Reports(int? month, int? year)
         {
@@ -257,6 +290,62 @@ namespace ArtClub.Controllers
             };
 
             return View(vm);
+        }
+
+        /// <summary>
+        /// REQ-23: Resource Availability Report - Shows which resources are available/unavailable for date ranges.
+        /// </summary>
+        public async Task<IActionResult> ResourceAvailabilityReport(DateTime? startDate, DateTime? endDate)
+        {
+            var start = startDate ?? DateTime.Now;
+            var end = endDate ?? DateTime.Now.AddDays(30);
+
+            var resources = await _context.Resources.Include(r => r.Reservations).ToListAsync();
+
+            var report = new List<object>();
+            foreach (var resource in resources)
+            {
+                var hasConflicts = resource.Reservations.Any(r =>
+                    r.StartTime < end && r.EndTime > start &&
+                    r.Status != Models.Enums.ReservationStatus.Cancelled);
+
+                report.Add(new
+                {
+                    ResourceId = resource.Id,
+                    ResourceName = resource.Name,
+                    StartDate = start,
+                    EndDate = end,
+                    IsAvailable = !hasConflicts,
+                    ConflictCount = hasConflicts ? resource.Reservations.Count(r =>
+                        r.StartTime < end && r.EndTime > start &&
+                        r.Status != Models.Enums.ReservationStatus.Cancelled) : 0
+                });
+            }
+
+            ViewBag.StartDate = start;
+            ViewBag.EndDate = end;
+            return View(report);
+        }
+
+        /// <summary>
+        /// REQ-24: Reservation Date Report - Shows all reservations for a date range grouped by date/resource.
+        /// </summary>
+        public async Task<IActionResult> ReservationDateReport(DateTime? startDate, DateTime? endDate)
+        {
+            var start = startDate ?? DateTime.Now;
+            var end = endDate ?? DateTime.Now.AddDays(30);
+
+            var reservations = await _context.Reservations
+                .Include(r => r.Resource)
+                .Include(r => r.Event)
+                .Where(r => r.StartTime < end && r.EndTime > start)
+                .OrderBy(r => r.StartTime)
+                .ThenBy(r => r.Resource.Name)
+                .ToListAsync();
+
+            ViewBag.StartDate = start;
+            ViewBag.EndDate = end;
+            return View(reservations);
         }
     }
 }
