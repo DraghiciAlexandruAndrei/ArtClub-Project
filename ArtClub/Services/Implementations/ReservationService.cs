@@ -8,21 +8,32 @@ namespace ArtClub.Services.Implementations
     public class ReservationService : IReservationService
     {
         private readonly IReservationRepository _reservationRepo;
+        private readonly IUserRepository _userRepo;
 
-        public ReservationService(IReservationRepository reservationRepo)
+        public ReservationService(IReservationRepository reservationRepo, IUserRepository userRepo)
         {
             _reservationRepo = reservationRepo;
+            _userRepo = userRepo;
+        }
+
+        private async Task<bool> CanOverrideReservationsAsync(int? adminUserId)
+        {
+            if (!adminUserId.HasValue)
+            {
+                return false;
+            }
+
+            var adminUser = await _userRepo.GetByIdAsync(adminUserId.Value);
+            return adminUser != null && (adminUser.Role == UserRole.Admin || adminUser.CanOverrideReservations);
         }
 
         /// <summary>
         /// Checks if a resource is available for the given time period.
-        /// REQ-20: If adminUserId is provided, the check allows admin overrides (returns true always).
-        /// For non-admins, applies 1-day buffer strictly.
+        /// Admins can only bypass conflicts when CanOverrideReservations is enabled.
         /// </summary>
         public async Task<bool> CheckAvailabilityAsync(int resourceId, DateTime start, DateTime end, int? adminUserId = null)
         {
-            // Admin bypass - admins can always book (override will handle conflicts)
-            if (adminUserId.HasValue)
+            if (await CanOverrideReservationsAsync(adminUserId))
             {
                 return true;
             }
@@ -38,35 +49,17 @@ namespace ArtClub.Services.Implementations
         }
 
         /// <summary>
-        /// Creates a regular reservation.
-        /// REQ-20: If adminUserId is provided, creates an override reservation with PendingApproval status
-        /// and marks all conflicting reservations as OverrideRequired (requiring user to reschedule).
+        /// Creates a reservation.
+        /// Admin overrides are created as confirmed reservations when the user is allowed to override.
         /// </summary>
         public async Task CreateReservationAsync(Reservation reservation, int? adminUserId = null)
         {
-            if (adminUserId.HasValue)
+            if (await CanOverrideReservationsAsync(adminUserId))
             {
-                // This is an admin override - mark it as pending approval
                 reservation.IsAdminOverride = true;
                 reservation.AdminOverrideById = adminUserId.Value;
-                reservation.Status = ReservationStatus.PendingApproval;
+                reservation.Status = ReservationStatus.Confirmed;
                 reservation.OverrideCreatedAt = DateTime.UtcNow;
-
-                // Find all conflicting reservations and mark them as OverrideRequired
-                var conflictingReservations = await _reservationRepo.GetExternalUserConflictingReservationsAsync(
-                    reservation.ResourceId,
-                    reservation.StartTime,
-                    reservation.EndTime);
-
-                foreach (var conflictingRes in conflictingReservations)
-                {
-                    // Mark external user reservations as requiring reschedule
-                    if (conflictingRes.Status != ReservationStatus.Cancelled && 
-                        !conflictingRes.IsAdminOverride)
-                    {
-                        conflictingRes.Status = ReservationStatus.OverrideRequired;
-                    }
-                }
             }
 
             await _reservationRepo.AddReservationAsync(reservation);
@@ -88,6 +81,7 @@ namespace ArtClub.Services.Implementations
             await _reservationRepo.AddResourceAsync(resource);
             await _reservationRepo.SaveChangesAsync();
         }
+
 
         public async Task<bool> UpdateResourceAsync(string originalName, Resource model)
         {

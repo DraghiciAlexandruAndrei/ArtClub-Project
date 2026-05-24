@@ -18,16 +18,19 @@ namespace ArtClub.Controllers
         private readonly IArtPieceService _artPieceService;
         private readonly UserManager<User> _userManager;
         private readonly IInvitationService _invitationService;
+        private readonly IFinanceService _financeService;
         public EventController(
             IEventService eventService,
             IArtPieceService artPieceService,
             UserManager<User> userManager,
-            IInvitationService invitationService)
+            IInvitationService invitationService,
+            IFinanceService financeService)
         {
             _eventService = eventService;
             _artPieceService = artPieceService;
             _userManager = userManager;
             _invitationService = invitationService;
+            _financeService = financeService;
         }
 
         // GET: Event
@@ -128,13 +131,18 @@ namespace ArtClub.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge(); // Forțează re-logarea dacă user-ul nu e găsit
 
-            // REQ-47: Check if member reservations are blocked due to monthly deficit (only for non-admins)
-            if (user.Role != UserRole.Admin)
+            // REQ-21 / REQ-47: block free member reservations when the monthly deficit rule applies
+            if (user.Role == UserRole.Member)
             {
-                // This check would require IFinanceService injected into the controller
-                // For now, we'll add a comment to implement this in a future refactoring
-                // TODO: Inject IFinanceService and check: var isBlocked = await _financeService.IsReservationBlockedForMembersAsync();
-                // if (isBlocked) { return RedirectToAction("BlockedReservation", "Error"); }
+                var isBlocked = await _financeService.IsReservationBlockedForMembersAsync();
+                if (isBlocked)
+                {
+                    ModelState.AddModelError("", "Rezervările membrilor sunt blocate temporar din cauza regulilor financiare curente.");
+                    await PopulateArtPiecesViewBag();
+                    var resources = await _eventService.GetAllResourcesAsync();
+                    model.AvailableResources = resources.Select(r => new SelectListItem { Value = r.Name, Text = r.Name }).ToList();
+                    return View(model);
+                }
             }
 
             var resource = await _eventService.GetResourceByNameAsync(model.ResourceName);
@@ -176,6 +184,23 @@ namespace ArtClub.Controllers
                 return View(model);
             }
 
+            if (user.Role == UserRole.External)
+            {
+                var days = (ev.Reservation.EndTime - ev.Reservation.StartTime).Days;
+                if (days <= 0) days = 1;
+
+                var feeAmount = await _financeService.CalculateNonMemberReservationFeeAsync(days);
+                await _financeService.CreatePaymentAsync(new Payment
+                {
+                    UserId = user.Id,
+                    Amount = feeAmount,
+                    Date = DateTime.Now,
+                    IsIncome = true,
+                    Type = PaymentType.Booking,
+                    Description = $"Non-member reservation fee for event: {ev.Title}"
+                });
+            }
+
             TempData["StatusMessage"] = "Eveniment creat cu succes!";
             return RedirectToAction(nameof(Details), new { title = ev.Title });
         }
@@ -192,6 +217,11 @@ namespace ArtClub.Controllers
             // Verificare: doar proprietarul sau Admin-ul poate edita
             var currentUser = await _userManager.GetUserAsync(User);
             if (ev.OrganizerId != currentUser.Id && !User.IsInRole("Admin"))
+            {
+                return Forbid();
+            }
+
+            if (!User.IsInRole("Admin") && ev.Reservation != null && ev.Reservation.StartTime <= DateTime.Now.AddDays(2))
             {
                 return Forbid();
             }
@@ -254,6 +284,11 @@ namespace ArtClub.Controllers
 
             // Get current user to check if admin
             var currentUser = await _userManager.GetUserAsync(User);
+            if (!User.IsInRole("Admin") && ev.Reservation != null && ev.Reservation.StartTime <= DateTime.Now.AddDays(2))
+            {
+                return Forbid();
+            }
+
             int? adminUserId = User.IsInRole("Admin") ? currentUser?.Id : null;
 
             var success = await _eventService.UpdateEventAsync(originalTitle, ev, adminUserId);

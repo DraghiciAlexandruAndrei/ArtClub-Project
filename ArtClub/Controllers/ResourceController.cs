@@ -15,9 +15,20 @@ namespace ArtClub.Controllers
             _reservationService = reservationService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? searchTerm)
         {
             var resources = await _reservationService.GetAllResourcesAsync();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLower();
+                resources = resources.Where(r =>
+                    (r.Name != null && r.Name.ToLower().Contains(term)) ||
+                    (r.Description != null && r.Description.ToLower().Contains(term)) ||
+                    r.Capacity.ToString().Contains(term)).ToList();
+            }
+
+            ViewBag.SearchTerm = searchTerm;
 
             var model = resources.Select(r => new ResourceOverviewViewModel
             {
@@ -122,6 +133,38 @@ namespace ArtClub.Controllers
             var reservations = await _reservationService.GetReservationCalendarAsync();
 
             return View(reservations);
+        }
+
+        public async Task<IActionResult> ReservationDatesReport(string name, DateTime? startDate, DateTime? endDate)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return NotFound();
+            }
+
+            var resource = await _reservationService.GetResourceByNameAsync(name);
+            if (resource == null)
+            {
+                return NotFound();
+            }
+
+            var start = startDate ?? DateTime.Now.AddMonths(-1);
+            var end = endDate ?? DateTime.Now.AddMonths(1);
+
+            var reservations = resource.Reservations
+                .Where(r => r.StartTime < end && r.EndTime > start && r.Status != Models.Enums.ReservationStatus.Cancelled)
+                .OrderBy(r => r.StartTime)
+                .ToList();
+
+            var vm = new ResourceReservationDatesReportViewModel
+            {
+                ResourceName = resource.Name,
+                StartDate = start,
+                EndDate = end,
+                Reservations = reservations
+            };
+
+            return View(vm);
         }
     }
 }

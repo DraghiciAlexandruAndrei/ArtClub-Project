@@ -207,7 +207,14 @@ namespace ArtClub.Controllers
                 user.IsMembershipActive = true;
                 user.Role = UserRole.Member;
 
+                var oldRoles = await _userManager.GetRolesAsync(user);
+                if (oldRoles.Any())
+                {
+                    await _userManager.RemoveFromRolesAsync(user, oldRoles);
+                }
+                await _userManager.AddToRoleAsync(user, UserRole.Member.ToString());
                 await _userManager.UpdateAsync(user);
+                await _signInManager.RefreshSignInAsync(user);
 
                 TempData["StatusMessage"] = "Abonament activat! Limită ridicată la 5 evenimente.";
                 return RedirectToAction("Index", "Event");
@@ -234,6 +241,7 @@ namespace ArtClub.Controllers
                 UserName = user.UserName,
                 Email = user.Email,
                 JoinedDate = user.MembershipDate ?? DateTime.Now,
+                Role = user.Role,
                 IsMembershipActive = user.IsMembershipActive,
                 MyOrganizedEvents = organizedEvents.Select(e => new EventSummaryViewModel
                 {
@@ -258,6 +266,36 @@ namespace ArtClub.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeactivateAccount()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            user.IsActive = false;
+            await _userManager.UpdateAsync(user);
+            await _signInManager.RefreshSignInAsync(user);
+            TempData["StatusMessage"] = "Contul a fost dezactivat.";
+            return RedirectToAction(nameof(MyProfile));
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReactivateAccount()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            user.IsActive = true;
+            await _userManager.UpdateAsync(user);
+            await _signInManager.RefreshSignInAsync(user);
+            TempData["StatusMessage"] = "Contul a fost reactivat.";
+            return RedirectToAction(nameof(MyProfile));
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> BecomeMember()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -266,6 +304,12 @@ namespace ArtClub.Controllers
             user.IsMembershipActive = true;
             user.Role = UserRole.Member;
 
+            var oldRoles = await _userManager.GetRolesAsync(user);
+            if (oldRoles.Any())
+            {
+                await _userManager.RemoveFromRolesAsync(user, oldRoles);
+            }
+
             var updateResult = await _userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
             {
@@ -273,10 +317,8 @@ namespace ArtClub.Controllers
                 return RedirectToAction(nameof(MyProfile));
             }
 
-            if (!await _userManager.IsInRoleAsync(user, "Member"))
-            {
-                await _userManager.AddToRoleAsync(user, "Member");
-            }
+            await _userManager.AddToRoleAsync(user, UserRole.Member.ToString());
+            await _signInManager.RefreshSignInAsync(user);
 
             TempData["StatusMessage"] = "Plată confirmată! Acum ești membru activ ArtClub și poți crea până la 5 evenimente.";
             return RedirectToAction(nameof(MyProfile));

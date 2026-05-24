@@ -1,6 +1,7 @@
 ﻿using ArtClub.DataAccess;
 using ArtClub.DataAccess.Interfaces;
 using ArtClub.Models.Entities;
+using ArtClub.Models.Enums;
 using ArtClub.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using PdfSharp.Drawing;
@@ -79,6 +80,7 @@ namespace ArtClub.Services.Implementations
                 Amount = amount,
                 Date = DateTime.Now,
                 IsIncome = false,
+                Type = PaymentType.Expense,
                 Description = $"Cheltuieli automate Eveniment ID: {eventId}"
             };
 

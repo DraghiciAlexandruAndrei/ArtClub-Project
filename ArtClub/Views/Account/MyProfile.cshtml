@@ -1,4 +1,5 @@
 ﻿@model ArtClub.Models.ViewModels.Account.MyProfileViewModel
+@using ArtClub.Models.Enums
 
 @{
     ViewData["Title"] = "Profilul Meu";
@@ -30,7 +31,7 @@
 
                     <hr class="my-4">
 
-                    @if (User.IsInRole("Admin"))
+                    @if (Model.Role == UserRole.Admin)
                     {
                         <div class="membership-card p-3 rounded-3 bg-light-danger border-danger"
                              style="background-color: #fff5f5;">

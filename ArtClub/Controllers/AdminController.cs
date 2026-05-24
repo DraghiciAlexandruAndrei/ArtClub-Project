@@ -4,6 +4,7 @@ using ArtClub.Models.Enums;
 using ArtClub.Models.ViewModels;
 using ArtClub.Models.ViewModels.Admin;
 using ArtClub.Models.ViewModels.Finance;
+using ArtClub.Models.ViewModels.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +17,13 @@ namespace ArtClub.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public AdminController(ApplicationDbContext context, UserManager<User> userManager)
+        public AdminController(ApplicationDbContext context, UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _context = context;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         public async Task<IActionResult> Index()
@@ -147,6 +150,12 @@ namespace ArtClub.Controllers
                     TempData["ErrorMessage"] = string.Join(", ", addRoleResult.Errors.Select(e => e.Description));
                     return View(vm);
                 }
+            }
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser != null && currentUser.Id == user.Id)
+            {
+                await _signInManager.RefreshSignInAsync(user);
             }
 
             TempData["StatusMessage"] = $"Rolul utilizatorului {user.UserName} a fost schimbat în {vm.NewRole}.";
@@ -289,11 +298,55 @@ namespace ArtClub.Controllers
                 MembersBlocked = expenses > income
             };
 
+            ViewBag.MonthlyMembersBlocked = vm.MembersBlocked;
             return View(vm);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ClubSettings()
+        {
+            var settings = await _context.ClubSettings.FirstOrDefaultAsync() ?? new ClubSettings();
+
+            var vm = new ClubSettingsViewModel
+            {
+                NonMemberReservationFeePerDay = settings.NonMemberReservationFeePerDay,
+                MembershipCost = settings.MembershipCost,
+                EventCostPerArtPiece = settings.EventCostPerArtPiece,
+                EventCostPerLocation = settings.EventCostPerLocation,
+                PendingOverrideApprovalHours = settings.PendingOverrideApprovalHours
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ClubSettings(ClubSettingsViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var settings = await _context.ClubSettings.FirstOrDefaultAsync();
+            if (settings == null)
+            {
+                settings = new ClubSettings();
+                await _context.ClubSettings.AddAsync(settings);
+            }
+
+            settings.NonMemberReservationFeePerDay = model.NonMemberReservationFeePerDay;
+            settings.MembershipCost = model.MembershipCost;
+            settings.EventCostPerArtPiece = model.EventCostPerArtPiece;
+            settings.EventCostPerLocation = model.EventCostPerLocation;
+            settings.PendingOverrideApprovalHours = model.PendingOverrideApprovalHours;
+            settings.LastUpdated = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            TempData["StatusMessage"] = "Club settings saved.";
+            return RedirectToAction(nameof(ClubSettings));
+        }
+
         /// <summary>
-        /// REQ-23: Resource Availability Report - Shows which resources are available/unavailable for date ranges.
+        /// REQ-23: Resource Availability Report - Shows which resources remain available for a selected interval.
         /// </summary>
         public async Task<IActionResult> ResourceAvailabilityReport(DateTime? startDate, DateTime? endDate)
         {
@@ -302,29 +355,33 @@ namespace ArtClub.Controllers
 
             var resources = await _context.Resources.Include(r => r.Reservations).ToListAsync();
 
-            var report = new List<object>();
-            foreach (var resource in resources)
+            var rows = resources.Select(resource =>
             {
-                var hasConflicts = resource.Reservations.Any(r =>
+                var conflictCount = resource.Reservations.Count(r =>
                     r.StartTime < end && r.EndTime > start &&
                     r.Status != Models.Enums.ReservationStatus.Cancelled);
 
-                report.Add(new
+                return new ResourceAvailabilityReportRowViewModel
                 {
                     ResourceId = resource.Id,
                     ResourceName = resource.Name,
-                    StartDate = start,
-                    EndDate = end,
-                    IsAvailable = !hasConflicts,
-                    ConflictCount = hasConflicts ? resource.Reservations.Count(r =>
-                        r.StartTime < end && r.EndTime > start &&
-                        r.Status != Models.Enums.ReservationStatus.Cancelled) : 0
-                });
-            }
+                    Capacity = resource.Capacity,
+                    ConflictCount = conflictCount
+                };
+            })
+            .Where(r => r.ConflictCount == 0)
+            .OrderBy(r => r.ResourceName)
+            .ToList();
 
-            ViewBag.StartDate = start;
-            ViewBag.EndDate = end;
-            return View(report);
+            var vm = new ResourceAvailabilityReportViewModel
+            {
+                StartDate = start,
+                EndDate = end,
+                AvailableResources = rows,
+                UnavailableCount = resources.Count - rows.Count
+            };
+
+            return View(vm);
         }
 
         /// <summary>

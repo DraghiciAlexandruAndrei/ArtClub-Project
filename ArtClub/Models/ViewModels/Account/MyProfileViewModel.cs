@@ -1,4 +1,5 @@
-﻿using ArtClub.Models.ViewModels.Event;
+﻿using ArtClub.Models.Enums;
+using ArtClub.Models.ViewModels.Event;
 
 namespace ArtClub.Models.ViewModels.Account
 {
@@ -7,6 +8,7 @@ namespace ArtClub.Models.ViewModels.Account
         public string UserName { get; set; }
         public string Email { get; set; }
         public DateTime JoinedDate { get; set; }
+        public UserRole Role { get; set; }
 
         // REQ: Status membru pentru calculul tarifelor și afișarea butonului de plată
         public bool IsMembershipActive { get; set; }
