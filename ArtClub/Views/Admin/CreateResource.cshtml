@@ -1,0 +1,41 @@
+﻿@model ArtClub.Models.Entities.Resource
+
+@{
+    ViewData["Title"] = "Add Resource";
+}
+
+<h1>Add Resource</h1>
+
+<form asp-action="CreateResource" method="post" class="row g-3" style="max-width: 600px;">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="col-12">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="Capacity" class="form-label"></label>
+        <input asp-for="Capacity" type="number" class="form-control" />
+        <span asp-validation-for="Capacity" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="BasePrice" class="form-label">Base Price (lei/day)</label>
+        <input asp-for="BasePrice" type="number" step="0.01" class="form-control" />
+        <span asp-validation-for="BasePrice" class="text-danger"></span>
+    </div>
+    <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-success">Add Resource</button>
+        <a asp-action="Resources" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

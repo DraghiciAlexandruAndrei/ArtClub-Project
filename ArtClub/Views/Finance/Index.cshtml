@@ -1,0 +1,91 @@
+﻿@model ArtClub.Models.ViewModels.Finance.FinanceDashboardViewModel
+
+@{
+    ViewData["Title"] = "Finance dashboard";
+    var currentMonth = DateTime.Now.Month;
+    var currentYear = DateTime.Now.Year;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1>Finance dashboard</h1>
+        <p class="text-muted mb-0">Overview of income, expenses, and current club balance.</p>
+    </div>
+
+    <div>
+        <a asp-action="Payments" class="btn btn-outline-secondary">View payments</a>
+        <a asp-action="Create" class="btn btn-primary">Add payment</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Total income</h2>
+                <p class="display-6">@Model.TotalIncome lei</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Total expenses</h2>
+                <p class="display-6">@Model.TotalExpenses lei</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Net balance</h2>
+                <p class="display-6">@Model.NetBalance lei</p>
+
+                @if (Model.HasTheClubEnoughMoney)
+                {
+                    <span class="badge bg-success">Sufficient funds</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger">Insufficient funds</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h2 class="h5">Recent transactions</h2>
+
+        @if (Model.RecentTransactions != null && Model.RecentTransactions.Any())
+        {
+            <ul class="mb-0">
+                @foreach (var item in Model.RecentTransactions)
+                {
+                    <li>@item</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="text-muted mb-0">No recent transactions are available.</p>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h2 class="h5">Monthly report</h2>
+        <p class="text-muted">Generate a finance report for the current month.</p>
+
+        <a asp-action="GenerateReport"
+           asp-route-month="@currentMonth"
+           asp-route-year="@currentYear"
+           class="btn btn-outline-primary">
+            Generate current month report
+        </a>
+    </div>
+</div>

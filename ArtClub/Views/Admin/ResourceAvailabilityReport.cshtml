@@ -1,0 +1,68 @@
+@model ArtClub.Models.ViewModels.Admin.ResourceAvailabilityReportViewModel
+
+@{
+    ViewData["Title"] = "Resource Availability Report";
+    var startDate = Model.StartDate;
+    var endDate = Model.EndDate;
+}
+
+<h1>Resource Availability Report</h1>
+
+<form asp-action="ResourceAvailabilityReport" method="get" class="row g-2 my-3">
+    <div class="col-md-3">
+        <label for="startDate" class="form-label">Start Date:</label>
+        <input type="date" id="startDate" name="startDate" value="@startDate.ToString("yyyy-MM-dd")"
+               class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label for="endDate" class="form-label">End Date:</label>
+        <input type="date" id="endDate" name="endDate" value="@endDate.ToString("yyyy-MM-dd")"
+               class="form-control" />
+    </div>
+    <div class="col-auto d-flex align-items-end">
+        <button type="submit" class="btn btn-primary">Generate Report</button>
+    </div>
+</form>
+
+<hr />
+
+<div class="alert alert-info">
+    <strong>Report Period:</strong> @startDate.ToString("dd.MM.yyyy") to @endDate.ToString("dd.MM.yyyy")
+</div>
+
+@if (Model.AvailableResources.Any())
+{
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Resource ID</th>
+                <th>Resource Name</th>
+                <th>Capacity</th>
+                <th>Conflicts</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model.AvailableResources)
+        {
+            <tr>
+                <td>@item.ResourceId</td>
+                <td>@item.ResourceName</td>
+                <td>@item.Capacity</td>
+                <td>@item.ConflictCount</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-warning">
+        No resources are available for the selected interval.
+    </div>
+}
+
+<div class="alert alert-info">
+    Available resources: @Model.AvailableCount | Unavailable resources: @Model.UnavailableCount
+</div>
+
+<a asp-action="Index" class="btn btn-secondary mt-2">← Back to Dashboard</a>

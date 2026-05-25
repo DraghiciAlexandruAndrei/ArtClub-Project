@@ -1,0 +1,113 @@
+@page
+@model ArtClub.Pages.Reservation.RescheduleModel
+@{
+    ViewData["Title"] = "Reschedule Reservation";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Reschedule Required
+                    </h3>
+                </div>
+
+                <div class="card-body">
+                    <div class="alert alert-warning mb-4">
+                        <strong><i class="bi bi-info-circle"></i> Notice:</strong> 
+                        Your reservation has been overridden by an admin. Please reschedule your reservation to a different time slot.
+                    </div>
+
+                    @if (Model.CurrentReservation != null)
+                    {
+                        <div class="mb-4 p-3 bg-light rounded">
+                            <h5 class="mb-3">Current Reservation Details</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <strong>Resource:</strong><br />
+                                        @Model.CurrentReservation.Resource?.Name ?? "Unknown"
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Original Date:</strong><br />
+                                        @Model.CurrentReservation.StartTime.ToString("dd MMMM yyyy")
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <strong>Original Time:</strong><br />
+                                        @Model.CurrentReservation.StartTime.ToString("HH:mm") - @Model.CurrentReservation.EndTime.ToString("HH:mm")
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Duration:</strong><br />
+                                        @((Model.CurrentReservation.EndTime - Model.CurrentReservation.StartTime).Hours) hours
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <form method="post">
+                        <input type="hidden" asp-for="ReservationId" />
+
+                        <div class="form-group mb-3">
+                            <label asp-for="NewStartTime" class="form-label fw-bold">New Start Date & Time <span class="text-danger">*</span></label>
+                            <input type="datetime-local" asp-for="NewStartTime" class="form-control" required />
+                            <span asp-validation-for="NewStartTime" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="NewEndTime" class="form-label fw-bold">New End Date & Time <span class="text-danger">*</span></label>
+                            <input type="datetime-local" asp-for="NewEndTime" class="form-control" required />
+                            <span asp-validation-for="NewEndTime" class="text-danger small"></span>
+                        </div>
+
+                        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.Any(v => v.Errors.Count > 0))
+                        {
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach (var modelState in ViewData.ModelState.Values)
+                                    {
+                                        @foreach (var error in modelState.Errors)
+                                        {
+                                            <li>@error.ErrorMessage</li>
+                                        }
+                                    }
+                                </ul>
+                            </div>
+                        }
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success" formaction="?handler=">
+                                <i class="bi bi-check-circle"></i> Reschedule Reservation
+                            </button>
+                            <button type="submit" class="btn btn-outline-danger" formaction="?handler=Cancel">
+                                <i class="bi bi-x-circle"></i> Cancel Reservation
+                            </button>
+                            <a href="/Account/Dashboard" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-4">
+                <h6><i class="bi bi-lightbulb"></i> Tips:</h6>
+                <ul class="mb-0">
+                    <li>Choose a time slot that doesn't conflict with other reservations</li>
+                    <li>The system will automatically check availability before confirming</li>
+                    <li>You can either reschedule to a new time or cancel the reservation</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

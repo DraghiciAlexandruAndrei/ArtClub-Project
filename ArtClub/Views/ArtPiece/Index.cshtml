@@ -1,0 +1,68 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@model IEnumerable<ArtClub.Models.ViewModels.ArtPiece.ArtPieceListViewModel>
+
+@{
+    ViewData["Title"] = "Art pieces";
+
+    // Verificăm rolurile utilizatorului curent
+    var isAdmin = User.IsInRole("Admin");
+    var isMember = User.IsInRole("Member");
+
+    // Adminii și Membrii pot crea/edita piese de artă
+    var canModify = isAdmin;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1>Art pieces</h1>
+        <p class="text-muted mb-0">Browse and manage the club art collection.</p>
+    </div>
+
+    <div>
+        <a asp-action="Popular" class="btn btn-outline-secondary">Popular pieces</a>
+
+        @if (canModify)
+        {
+            <a asp-action="Create" class="btn btn-primary">Add art piece</a>
+        }
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="row g-3">
+        @foreach (var piece in Model)
+        {
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">@piece.Title</h2>
+
+                        <p class="mb-1"><strong>Creator:</strong> @piece.ArtistName</p>
+                        <p class="mb-3"><strong>Status:</strong> @piece.Style</p>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a asp-action="Details" asp-route-id="@piece.Id" class="btn btn-sm btn-outline-primary">Details</a>
+
+                            @if (canModify)
+                            {
+                                <a asp-action="Edit" asp-route-id="@piece.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            }
+
+                            @if (isAdmin)
+                            {
+                                <a asp-action="Delete" asp-route-id="@piece.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-secondary">
+        No art pieces are available yet.
+    </div>
+}

@@ -1,0 +1,87 @@
+﻿@model ArtClub.Models.ViewModels.Admin.AdminDashboardViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h1>Admin Dashboard</h1>
+
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["StatusMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-3 mt-2">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total Users</h5>
+                <p class="card-text fs-2">@Model.TotalUsers</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Total Resources</h5>
+                <p class="card-text fs-2">@Model.TotalResources</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Total Events</h5>
+                <p class="card-text fs-2">@Model.TotalEvents</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-secondary">
+            <div class="card-body">
+                <h5 class="card-title">Total Payments</h5>
+                <p class="card-text fs-2">@Model.TotalPayments</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-2">
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body">
+                <h6 class="card-subtitle text-muted">This Month — Income</h6>
+                <p class="card-text fs-4 text-success">@Model.MonthlyIncome.ToString("N2") lei</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-danger">
+            <div class="card-body">
+                <h6 class="card-subtitle text-muted">This Month — Expenses</h6>
+                <p class="card-text fs-4 text-danger">@Model.MonthlyExpenses.ToString("N2") lei</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card @(Model.Balance >= 0 ? "border-success" : "border-danger")">
+            <div class="card-body">
+                <h6 class="card-subtitle text-muted">Balance</h6>
+                <p class="card-text fs-4 @(Model.Balance >= 0 ? "text-success" : "text-danger")">
+                    @Model.Balance.ToString("N2") lei
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 d-flex gap-2 flex-wrap">
+    <a asp-action="Users" class="btn btn-outline-primary">Manage Users</a>
+    <a asp-action="Resources" class="btn btn-outline-success">Manage Resources</a>
+    <a asp-action="Payments" class="btn btn-outline-secondary">View Payments</a>
+    <a asp-action="Reports" class="btn btn-outline-info">Financial Reports</a>
+    <a asp-action="ClubSettings" class="btn btn-outline-dark">Club Settings</a>
+</div>

@@ -1,0 +1,43 @@
+﻿@model ArtClub.Models.ViewModels.Admin.EditUserRoleViewModel
+
+@{
+    ViewData["Title"] = "Edit User Role";
+}
+
+<h1>Change Role</h1>
+
+<div class="card mt-3" style="max-width: 480px;">
+    <div class="card-body">
+        <p><strong>Username:</strong> @Model.UserName</p>
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Current Role:</strong>
+            <span class="badge bg-primary">@Model.CurrentRole</span>
+        </p>
+
+        <form asp-action="EditRole" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="UserId" />
+            <input type="hidden" asp-for="UserName" />
+            <input type="hidden" asp-for="Email" />
+            <input type="hidden" asp-for="CurrentRole" />
+
+            <div class="col-12">
+                <label asp-for="NewRole" class="form-label">New Role</label>
+                <select asp-for="NewRole"
+                        asp-items="Html.GetEnumSelectList<ArtClub.Models.Enums.UserRole>()"
+                        class="form-select">
+                </select>
+                <span asp-validation-for="NewRole" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-action="Users" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

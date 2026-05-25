@@ -1,0 +1,169 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using ArtClub.Models.Entities
+@inject SignInManager<User> SignInManager
+
+@{
+    ViewData["Title"] = "Home Page";
+    var activeEvents = ViewBag.ActiveEvents as List<ArtClub.Models.Entities.Event>;
+    var popularPieces = ViewBag.PopularArtPieces as List<ArtClub.Models.Entities.ArtPiece>;
+}
+
+@if (!SignInManager.IsSignedIn(User))
+{
+    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+        <div class="container-fluid py-3">
+            <h1 class="display-5 fw-bold text-primary"><i class="bi bi-palette2"></i> Art Club Management System</h1>
+            <p class="col-md-8 fs-5 text-muted">A web application for members, resources, events, reservations, and financial reporting.</p>
+            <div class="d-flex gap-2 mt-4">
+                <a class="btn btn-primary btn-lg px-4" asp-controller="Account" asp-action="Register">Create account</a>
+                <a class="btn btn-outline-secondary btn-lg px-4" asp-controller="Account" asp-action="Login">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div>
+                        <h5 class="card-title fw-bold"><i class="bi bi-people text-primary"></i> Members</h5>
+                        <p class="card-text text-muted small">Registration, login, and profile access.</p>
+                    </div>
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-outline-primary mt-3">Open</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div>
+                        <h5 class="card-title fw-bold"><i class="bi bi-building text-primary"></i> Resources</h5>
+                        <p class="card-text text-muted small">Rooms, availability, and reservation calendar.</p>
+                    </div>
+                    <a asp-controller="Resource" asp-action="Index" class="btn btn-sm btn-outline-primary mt-3">Open</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div>
+                        <h5 class="card-title fw-bold"><i class="bi bi-calendar-event text-primary"></i> Events</h5>
+                        <p class="card-text text-muted small">Event creation, invitations, and attendance.</p>
+                    </div>
+                    <a asp-controller="Event" asp-action="Index" class="btn btn-sm btn-outline-primary mt-3">Open</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div>
+                        <h5 class="card-title fw-bold"><i class="bi bi-cash-coin text-primary"></i> Finance</h5>
+                        <p class="card-text text-muted small">Income, expenses, and monthly reports.</p>
+                    </div>
+                    <a asp-controller="Finance" asp-action="Dashboard" class="btn btn-sm btn-outline-primary mt-3">Open</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Dashboard Membru</h2>
+            <p class="text-muted mb-0">Noutăți, evenimente active și colecții din cadrul clubului.</p>
+        </div>
+        <div>
+            <span class="badge bg-light text-dark p-2 border shadow-sm">
+                <i class="bi bi-shield-check text-success"></i> Sesiune Activă
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-check me-2"></i> Evenimente Active & Viitoare</h5>
+                    <a asp-controller="Event" asp-action="Index" class="btn btn-sm btn-light text-primary fw-bold">Vezi toate</a>
+                </div>
+                <div class="card-body p-0">
+                    @if (activeEvents != null && activeEvents.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var ev in activeEvents)
+                            {
+                                <div class="list-group-item p-3 list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                                        <h6 class="mb-0 text-dark fw-bold">@ev.Title</h6>
+                                        <span class="badge bg-info text-dark small">
+                                            @ev.Reservation?.StartTime.ToString("dd MMM HH:mm")
+                                        </span>
+                                    </div>
+                                    <p class="mb-2 text-muted small text-truncate" style="max-width: 90%;">
+                                        @(string.IsNullOrEmpty(ev.Description) ? "Fără descriere disponibilă." : ev.Description)
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <span class="small text-secondary" style="font-size: 0.8rem;">
+                                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>@(ev.Resource?.Name ?? "Club Venue")
+                                        </span>
+                                        <a asp-controller="Event" asp-action="Details" asp-route-title="@ev.Title" class="btn btn-sm btn-link p-0 text-decoration-none fw-bold">Detalii →</a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-5 text-center text-muted">
+                            <i class="bi bi-calendar-x fs-2 d-block mb-2 text-secondary"></i>
+                            Nu există evenimente active planificate în acest moment.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-star-fill me-2"></i> Piese de Artă Populare</h5>
+                    <a asp-controller="ArtPiece" asp-action="Index" class="btn btn-sm btn-light text-success fw-bold">Vizitează Galeria</a>
+                </div>
+                <div class="card-body p-3">
+                    @if (popularPieces != null && popularPieces.Any())
+                    {
+                        <div class="row g-3">
+                            @foreach (var piece in popularPieces)
+                            {
+                                <div class="col-6">
+                                    <div class="p-3 border rounded bg-light h-100 d-flex flex-column justify-content-between shadow-xs">
+                                        <div>
+                                            <span class="badge bg-warning text-dark mb-2 small"><i class="bi bi-fire"></i> Popular</span>
+                                            <h6 class="mb-1 text-dark fw-bold text-truncate" title="@piece.Title">@piece.Title</h6>
+                                            <small class="text-muted d-block text-truncate">Artist: @(piece.Creator ?? "Artist Club")</small>
+                                        </div>
+                                        <div class="mt-3 text-end">
+                                            <a asp-controller="ArtPiece" asp-action="Details" asp-route-id="@piece.Id" class="btn btn-xs btn-outline-success py-1 px-2 w-100 text-center" style="font-size: 0.75rem;">
+                                                <i class="bi bi-eye"></i> Vezi detalii
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-5 text-center text-muted my-auto">
+                            <i class="bi bi-image fs-2 d-block mb-2 text-secondary"></i>
+                            Nicio piesă de artă nu a fost marcată ca populară încă.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
