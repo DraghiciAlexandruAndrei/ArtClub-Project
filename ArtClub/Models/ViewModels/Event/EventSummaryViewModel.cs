@@ -5,6 +5,7 @@ namespace ArtClub.Models.ViewModels.Event
 {
     public class EventSummaryViewModel
     {
+        public int Id { get; set; }
         public string Title { get; set; }
         public string OrganizerName { get; set; }
         public string ResourceName { get; set; }

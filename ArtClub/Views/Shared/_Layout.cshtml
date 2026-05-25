@@ -4,21 +4,21 @@
 @inject UserManager<User> UserManager
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ro">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ArtClub</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link class="nav-link" rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ArtClub.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm mb-4">
             <div class="container-fluid">
-                <a class="navbar-brand text-primary" asp-controller="Home" asp-action="Index">
+                <a class="navbar-brand text-primary fw-bold" asp-controller="Home" asp-action="Index">
                     <i class="bi bi-palette2"></i> ArtClub
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
@@ -55,7 +55,7 @@
                                     <a class="nav-link text-dark" asp-controller="Admin" asp-action="Reports">Rapoarte</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark fw-bold text-danger" asp-controller="Finance" asp-action="Dashboard"><i class="bi bi-cash-coin"></i> Finanțe</a>
+                                    <a class="nav-link text-danger fw-bold" asp-controller="Finance" asp-action="Dashboard"><i class="bi bi-cash-coin"></i> Finanțe</a>
                                 </li>
                             }
                         }
@@ -68,7 +68,7 @@
                                 <a class="btn btn-outline-primary btn-sm px-4 me-lg-2 mb-2 mb-lg-0" asp-controller="Account" asp-action="Login">Login</a>
                             </li>
                             <li class="nav-item">
-                                <a class="btn btn-primary btn-sm px-4 register-btn" asp-controller="Account" asp-action="Register">Register</a>
+                                <a class="btn btn-primary btn-sm px-4" asp-controller="Account" asp-action="Register">Register</a>
                             </li>
                         }
                         else
@@ -80,7 +80,7 @@
                             <li class="nav-item me-3">
                                 <a class="nav-link text-dark position-relative p-1" asp-controller="Account" asp-action="MyProfile" title="Profilul meu & Invitații">
                                     <i class="bi bi-person-circle fs-5"></i>
-                                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 10px; height: 10px;"></span>
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -119,7 +119,7 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted bg-light">
+    <footer class="border-top footer text-muted bg-light mt-auto">
         <div class="container py-3">
             &copy; 2026 - <strong>ArtClub</strong>
         </div>
