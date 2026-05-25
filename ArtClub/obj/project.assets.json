@@ -839,19 +839,6 @@
           "buildMultiTargeting/_._": {}
         }
       },
-      "Microsoft.Extensions.Identity.Core/10.0.8": {
-        "type": "package",
-        "compile": {
-          "lib/net10.0/_._": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/_._": {
-            "related": ".xml"
-          }
-        }
-      },
       "Microsoft.Identity.Client/4.73.1": {
         "type": "package",
         "dependencies": {
@@ -3320,25 +3307,6 @@
         "tasks/netstandard2.0/Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll"
       ]
     },
-    "Microsoft.Extensions.Identity.Core/10.0.8": {
-      "sha512": "ZOuH3nlDslon9a0kJSRBTWnHNCKoiOoaurc3H1F4D6xLT+4UDvBNAqlLkEFyQdcxZFyUvYdwgc1+D/EjsD+RXA==",
-      "type": "package",
-      "path": "microsoft.extensions.identity.core/10.0.8",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "Icon.png",
-        "THIRD-PARTY-NOTICES.TXT",
-        "lib/net10.0/Microsoft.Extensions.Identity.Core.dll",
-        "lib/net10.0/Microsoft.Extensions.Identity.Core.xml",
-        "lib/net462/Microsoft.Extensions.Identity.Core.dll",
-        "lib/net462/Microsoft.Extensions.Identity.Core.xml",
-        "lib/netstandard2.0/Microsoft.Extensions.Identity.Core.dll",
-        "lib/netstandard2.0/Microsoft.Extensions.Identity.Core.xml",
-        "microsoft.extensions.identity.core.10.0.8.nupkg.sha512",
-        "microsoft.extensions.identity.core.nuspec"
-      ]
-    },
     "Microsoft.Identity.Client/4.73.1": {
       "sha512": "NnDLS8QwYqO5ZZecL2oioi1LUqjh5Ewk4bMLzbgiXJbQmZhDLtKwLxL3DpGMlQAJ2G4KgEnvGPKa+OOgffeJbw==",
       "type": "package",
@@ -4267,7 +4235,6 @@
       "Microsoft.EntityFrameworkCore.Sqlite >= 10.0.8",
       "Microsoft.EntityFrameworkCore.Sqlite.Core >= 10.0.8",
       "Microsoft.EntityFrameworkCore.Tools >= 10.0.8",
-      "Microsoft.Extensions.Identity.Core >= 10.0.8",
       "Moq >= 4.20.72",
       "PDFSharp.Extensions >= 0.1.2.2",
       "PDFsharp >= 6.2.4",
@@ -4275,23 +4242,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\q0ant\\.nuget\\packages\\": {},
-    "D:\\Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\coden\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\C#\\New folder\\P9-T8-DobreDraghiciGherasie-ArtClub-v0.16 (1)\\P9-T8-DobreDraghiciGherasie-ArtClub\\ArtClub\\ArtClub.csproj",
+      "projectUniqueName": "C:\\Users\\coden\\source\\repos\\P9-T8-DobreDraghiciGherasie\\ArtClub\\ArtClub.csproj",
       "projectName": "ArtClub",
-      "projectPath": "D:\\C#\\New folder\\P9-T8-DobreDraghiciGherasie-ArtClub-v0.16 (1)\\P9-T8-DobreDraghiciGherasie-ArtClub\\ArtClub\\ArtClub.csproj",
-      "packagesPath": "C:\\Users\\q0ant\\.nuget\\packages\\",
-      "outputPath": "D:\\C#\\New folder\\P9-T8-DobreDraghiciGherasie-ArtClub-v0.16 (1)\\P9-T8-DobreDraghiciGherasie-ArtClub\\ArtClub\\obj\\",
+      "projectPath": "C:\\Users\\coden\\source\\repos\\P9-T8-DobreDraghiciGherasie\\ArtClub\\ArtClub.csproj",
+      "packagesPath": "C:\\Users\\coden\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\coden\\source\\repos\\P9-T8-DobreDraghiciGherasie\\ArtClub\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "D:\\Visual Studio\\Shared\\NuGetPackages"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\q0ant\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\coden\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -4397,10 +4364,6 @@
             "target": "Package",
             "version": "[10.0.8, )"
           },
-          "Microsoft.Extensions.Identity.Core": {
-            "target": "Package",
-            "version": "[10.0.8, )"
-          },
           "Moq": {
             "target": "Package",
             "version": "[4.20.72, )"
@@ -4437,7 +4400,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300-preview.0.26177.108/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
@@ -4854,17 +4817,5 @@
         }
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1510",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "PackageReference Microsoft.Extensions.Identity.Core will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
-      "libraryId": "Microsoft.Extensions.Identity.Core",
-      "targetGraphs": [
-        "net10.0"
-      ]
-    }
-  ]
+  }
 }
