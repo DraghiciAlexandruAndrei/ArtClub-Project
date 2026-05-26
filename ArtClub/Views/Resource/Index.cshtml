@@ -1,0 +1,95 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@model IEnumerable<ArtClub.Models.ViewModels.Resource.ResourceOverviewViewModel>
+
+@{
+    ViewData["Title"] = "Resources";
+    var searchTerm = ViewBag.SearchTerm as string;
+
+    // Verificăm o singură dată dacă utilizatorul curent este administrator
+    var isAdmin = User.IsInRole("Admin");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1>Resources</h1>
+        <p class="text-muted mb-0">Rooms and spaces with availability status, capacity, and location.</p>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-action="Calendar" class="btn btn-outline-secondary">View calendar</a>
+
+        @if (isAdmin)
+        {
+            <a asp-controller="Admin" asp-action="ResourceAvailabilityReport" class="btn btn-outline-primary">Availability report</a>
+            <a asp-controller="Admin" asp-action="ReservationDateReport" class="btn btn-outline-primary">Reservation dates report</a>
+            <a asp-action="Create" class="btn btn-primary">Add resource</a>
+        }
+    </div>
+</div>
+
+<form asp-action="Index" method="get" class="row g-2 mb-4">
+    <div class="col-md-6">
+        <input type="text" name="searchTerm" value="@searchTerm" class="form-control" placeholder="Search by name, type, or capacity" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+    <div class="col-auto">
+        <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+    </div>
+</form>
+
+@if (Model != null && Model.Any())
+{
+    <div class="row g-3">
+        @foreach (var resource in Model)
+        {
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">@resource.Name</h2>
+
+                        <p class="mb-1"><strong>Type:</strong> @resource.Type</p>
+                        <p class="mb-1"><strong>Capacity:</strong> @resource.Capacity</p>
+                        <p class="mb-1"><strong>Location:</strong> @resource.Location</p>
+
+                        <p class="mb-3">
+                            <strong>Status:</strong>
+                            @if (resource.Status == "Available")
+                            {
+                                <span class="badge bg-success">@resource.Status</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">@resource.Status</span>
+                            }
+                        </p>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a asp-action="Details" asp-route-name="@resource.Name" class="btn btn-sm btn-outline-primary">
+                                Details
+                            </a>
+
+                            @if (isAdmin)
+                            {
+                                <a asp-action="Edit" asp-route-name="@resource.Name" class="btn btn-sm btn-outline-secondary">
+                                    Edit
+                                </a>
+
+                                <a asp-action="Delete" asp-route-name="@resource.Name" class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-secondary">
+        No resources are available yet.
+    </div>
+}

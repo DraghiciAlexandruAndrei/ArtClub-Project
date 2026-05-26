@@ -1,0 +1,88 @@
+﻿@model ArtClub.Models.ViewModels.Event.EventDetailsViewModel
+
+@{
+    ViewData["Title"] = "Ștergere Eveniment";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger shadow">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Confirmare Ștergere</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead text-center">
+                        Ești sigur că dorești să ștergi acest eveniment? <br />
+                        <span class="text-danger fw-bold">Această acțiune este ireversibilă.</span>
+                    </p>
+
+                    <div class="alert alert-secondary">
+                        <h5 class="border-bottom pb-2">Detalii Eveniment</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Titlu:</dt>
+                            <dd class="col-sm-8">@Model.Title</dd>
+
+                            <dt class="col-sm-4">Organizator:</dt>
+                            <dd class="col-sm-8">@Model.OrganizerName</dd>
+
+                            <dt class="col-sm-4">Locație:</dt>
+                            <dd class="col-sm-8">@Model.ResourceName</dd>
+
+                            <dt class="col-sm-4">Data:</dt>
+                            <dd class="col-sm-8">@Model.Date.ToString("dd MMM yyyy HH:mm")</dd>
+
+                            @if (Model.TotalCost > 0)
+                            {
+                                <dt class="col-sm-4 text-danger">Cost estimat:</dt>
+                                <dd class="col-sm-8 text-danger fw-bold">@Model.TotalCost lei</dd>
+                            }
+                        </dl>
+                    </div>
+
+                    @if (Model.Invitations != null && Model.Invitations.Any())
+                    {
+                        <div class="alert alert-warning border-warning">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            <strong>Atenție:</strong> Există deja <strong>@Model.Invitations.Count</strong> invitații trimise.
+                            Ștergerea evenimentului va anula automat toate aceste invitații din sistem.
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a asp-action="Details" asp-route-title="@Model.Title" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-arrow-left-circle me-1"></i> Înapoi la Detalii
+                        </a>
+
+                        @* REPARAȚIE: Trimitem către acțiunea 'Delete' cu metoda 'post' *@
+                        <form asp-action="Delete" method="post" id="deleteForm">
+                            @Html.AntiForgeryToken()
+
+                            @* Parametrul 'name' trebuie să fie IDENTIC cu cel din Controller (string title) *@
+                            <input type="hidden" name="title" value="@Model.Title" />
+
+                            <button type="submit" class="btn btn-danger btn-lg px-5 shadow-sm">
+                                <i class="bi bi-trash-fill me-1"></i> Șterge Definitiv
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-footer text-muted small text-center bg-light">
+                    Sistem de Management ArtClub &copy; @DateTime.Now.Year
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Confirmare suplimentară în browser pentru a preveni click-urile accidentale
+        document.getElementById('deleteForm').addEventListener('submit', function (e) {
+            const confirmed = confirm("ATENȚIE: Sunteți absolut sigur că doriți ștergerea? Toate datele asociate (rezervări, invitații) vor fi eliminate din baza de date.");
+            if (!confirmed) {
+                e.preventDefault();
+            }
+        });
+    </script>
+}

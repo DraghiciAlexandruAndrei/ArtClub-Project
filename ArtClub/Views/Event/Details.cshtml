@@ -1,0 +1,212 @@
+@model ArtClub.Models.ViewModels.Event.EventDetailsViewModel
+@using ArtClub.Models.Enums
+
+<div class="container mt-4">
+    @* --- ZONA DE NOTIFICĂRI (Feedback după apăsarea butonului) --- *@
+    @if (TempData["StatusMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["StatusMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">@Model.Title</h1>
+            <span class="badge bg-info text-dark">ID: #@Model.EventId</span>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-7">
+                    <h5 class="text-muted border-bottom pb-2">Informații Generale</h5>
+                    <p><strong><i class="bi bi-person"></i> Organizator:</strong> @Model.OrganizerName</p>
+                    <p><strong><i class="bi bi-geo-alt"></i> Locație:</strong> @Model.ResourceName</p>
+                    <p><strong><i class="bi bi-calendar-event"></i> Data:</strong> @Model.Date.ToString("dd MMM yyyy HH:mm")</p>
+
+                    @* REQ-5: Zona de Piese de Artă *@
+                    <h5 class="mt-4 text-muted border-bottom pb-2">Piese de Artă Expuse</h5>
+                    @if (Model.ArtPieceNames != null && Model.ArtPieceNames.Any())
+                    {
+                        <div class="row row-cols-1 row-cols-md-2 g-2 mt-1">
+                            @foreach (var artName in Model.ArtPieceNames)
+                            {
+                                <div class="col">
+                                    <div class="p-2 border rounded bg-light">
+                                        <i class="bi bi-palette-fill text-primary"></i> @artName
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-light border-dashed text-center">
+                            <i class="bi bi-info-circle"></i> Nicio piesă de artă nu a fost selectată pentru acest eveniment.
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-5">
+                    @* --- PANOU FINANCIAR ȘI LOGICĂ BUTON PLATĂ (REQ-5) --- *@
+                    <div class="card bg-light border-primary mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold text-primary">Costuri Automate (REQ-5)</h6>
+                            <hr />
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Chirie Locație:</span>
+                                <span>300 lei / zi</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Piese Artă (@(Model.ArtPieceNames?.Count ?? 0)):</span>
+                                <span>@((Model.ArtPieceNames?.Count ?? 0) * 200) lei / zi</span>
+                            </div>
+                            <hr />
+                            <div class="d-flex justify-content-between fw-bold text-danger h5 mb-3">
+                                <span>Total Estimat:</span>
+                                <span>@Model.TotalCost lei</span>
+                            </div>
+
+                            @if (!Model.IsPaid)
+                            {
+                                @* BUTON PLATĂ: Apare doar dacă IsPaid == false *@
+                                <form asp-controller="Finance" asp-action="Pay" method="post">
+                                    <input type="hidden" name="EventId" value="@Model.EventId" />
+                                    <input type="hidden" name="Amount" value="@Model.TotalCost" />
+                                    <button type="submit" class="btn btn-success w-100 btn-lg shadow-sm">
+                                        <i class="bi bi-credit-card-2-front me-2"></i>Finalizează Plata
+                                    </button>
+                                </form>
+                                <small class="text-muted d-block text-center mt-2 italic">
+                                    Plata înregistrează automat venitul în balanța clubului.
+                                </small>
+                            }
+                            else
+                            {
+                                @* MESAJ SUCCES: Apare după ce plata a fost procesată *@
+                                <div class="text-center p-3 border border-success rounded bg-white shadow-sm">
+                                    <div class="h1 text-success mb-2">
+                                        <i class="bi bi-patch-check-fill"></i>
+                                    </div>
+                                    <h6 class="text-success fw-bold">Eveniment Achitat</h6>
+                                    <p class="small text-muted mb-0">Suma de <strong>@Model.TotalCost lei</strong> a fost încasată cu succes.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    @* Status vizual general *@
+                    <div class="alert @(Model.IsPaid ? "alert-success shadow" : "alert-warning shadow-sm") text-center border-0">
+                        <strong>
+                            Status: @(Model.IsPaid ? "Rezervare Confirmată" : "Așteaptă Plata (Provizoriu)")
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            @* Secțiune Trimitere Invitații *@
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-person-plus me-2 text-primary"></i>Invită Membri</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="SendInvitation" method="post" class="row g-3 align-items-end">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="eventId" value="@Model.EventId" />
+                        <input type="hidden" name="eventTitle" value="@Model.Title" />
+
+                        <div class="col-md-8">
+                            <label class="form-label small fw-bold">Selectează Membru</label>
+                            <select name="inviteeId" class="form-select" required>
+                                <option value="">-- Alege un utilizator --</option>
+                                @if (ViewBag.Users != null)
+                                {
+                                    @foreach (var user in (IEnumerable<ArtClub.Models.Entities.User>)ViewBag.Users)
+                                    {
+                                        <option value="@user.Id">@user.UserName (@user.Email)</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100 shadow-sm" @(Model.IsPaid ? "" : "disabled") title="@(Model.IsPaid ? "Trimite invitație" : "Plătește evenimentul pentru a trimite invitații")">
+                                <i class="bi bi-send me-1"></i> Trimite Invitația
+                            </button>
+                        </div>
+                    </form>
+                    @if (!Model.IsPaid)
+                    {
+                        <small class="text-danger mt-2 d-block"><i class="bi bi-info-circle"></i> Trebuie să finalizezi plata pentru a putea invita membri.</small>
+                    }
+                </div>
+            </div>
+
+            @* Listă Invitații Trimise *@
+            <div class="mt-4">
+                <h6 class="fw-bold mb-3">Status Invitații</h6>
+                <div class="table-responsive rounded shadow-sm border">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Utilizator</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Invitations != null && Model.Invitations.Any())
+                            {
+                                @foreach (var invite in Model.Invitations)
+                                {
+                                    <tr>
+                                        <td>@invite.Invitee?.UserName</td>
+                                        <td>
+                                            <span class="badge @(invite.Status == InvitationStatus.Accepted ? "bg-success" :
+                                                                                                                   invite.Status == InvitationStatus.Declined ? "bg-danger" : "bg-warning text-dark")">
+                                                @invite.Status
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted py-3">Nicio invitație trimisă momentan.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            @* --- ZONA DE BUTOANE ACȚIUNE --- *@
+            <div class="mt-5 d-flex gap-2 border-top pt-3">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Înapoi la listă
+                </a>
+
+                @if (!Model.IsPaid)
+                {
+                    <a asp-action="Edit" asp-route-title="@Model.Title" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Editează Detalii
+                    </a>
+                }
+
+                <a asp-action="Delete" asp-route-title="@Model.Title" class="btn btn-danger ms-auto">
+                    <i class="bi bi-trash"></i> Șterge Eveniment
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

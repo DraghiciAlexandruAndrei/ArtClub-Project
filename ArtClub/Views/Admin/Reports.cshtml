@@ -1,0 +1,79 @@
+@model ArtClub.Models.ViewModels.Finance.MonthlyReportViewModel
+
+@{
+    ViewData["Title"] = "Financial Reports";
+}
+
+<h1>Financial Reports</h1>
+
+<form asp-action="Reports" method="get" class="row g-2 my-3">
+    <div class="col-auto">
+        <label class="form-label">Year</label>
+        <input type="number" name="year" value="@Model.Year" class="form-control" style="width:100px;" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label">Month</label>
+        <select name="month" class="form-select" style="width:130px;">
+        @for (int m = 1; m <= 12; m++)
+        {
+            var monthName = System.Globalization.CultureInfo.CurrentCulture
+                                .DateTimeFormat.GetMonthName(m);
+            if (Model.Month == m)
+            {
+                <option value="@m" selected>@monthName</option>
+            }
+            else
+            {
+                <option value="@m">@monthName</option>
+            }
+        }
+    </select>
+    </div>
+    <div class="col-auto align-self-end">
+        <button type="submit" class="btn btn-primary">Generate</button>
+    </div>
+</form>
+
+@if (Model.MembersBlocked)
+{
+    <div class="alert alert-danger">
+        ⚠️ Expenses exceeded income for this month.
+        <strong>Member reservations are blocked for the following month.</strong>
+        (REQ-47)
+    </div>
+}
+
+<div class="row g-3 mt-2" style="max-width: 600px;">
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Total Income</h6>
+                <p class="fs-4 text-success mb-0">@Model.TotalIncome.ToString("N2") lei</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Total Expenses</h6>
+                <p class="fs-4 text-danger mb-0">@Model.TotalExpenses.ToString("N2") lei</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card @(Model.Balance >= 0 ? "border-success" : "border-danger")">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Balance</h6>
+                <p class="fs-4 @(Model.Balance >= 0 ? "text-success" : "text-danger") mb-0">
+                    @Model.Balance.ToString("N2") lei
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 d-flex gap-2 flex-wrap">
+    <a asp-action="ResourceAvailabilityReport" class="btn btn-outline-primary">Resource availability report</a>
+    <a asp-action="ReservationDateReport" class="btn btn-outline-secondary">Reservation date report</a>
+    <a asp-action="Index" class="btn btn-secondary">← Back to Dashboard</a>
+</div>

@@ -1,0 +1,36 @@
+@model ArtClub.Models.ViewModels.Admin.ClubSettingsViewModel
+
+@{
+    ViewData["Title"] = "Club Settings";
+}
+
+<h1>Club Settings</h1>
+
+<form asp-action="ClubSettings" method="post" class="row g-3 mt-2">
+    @Html.AntiForgeryToken()
+
+    <div class="col-md-4">
+        <label asp-for="NonMemberReservationFeePerDay" class="form-label"></label>
+        <input asp-for="NonMemberReservationFeePerDay" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="MembershipCost" class="form-label"></label>
+        <input asp-for="MembershipCost" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="EventCostPerArtPiece" class="form-label"></label>
+        <input asp-for="EventCostPerArtPiece" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="EventCostPerLocation" class="form-label"></label>
+        <input asp-for="EventCostPerLocation" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label asp-for="PendingOverrideApprovalHours" class="form-label"></label>
+        <input asp-for="PendingOverrideApprovalHours" class="form-control" />
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Save settings</button>
+    </div>
+</form>

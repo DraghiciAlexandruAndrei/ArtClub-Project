@@ -1,0 +1,38 @@
+﻿@model ArtClub.Models.Entities.Resource
+
+@{
+    ViewData["Title"] = "Delete resource";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1>Delete resource</h1>
+        <p class="text-muted mb-0">Confirm removal of this resource from the club management system.</p>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary">Back to resources</a>
+</div>
+
+<div class="alert alert-danger">
+    <strong>Warning:</strong> This action will delete the selected resource.
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h2 class="h5">@Model.Name</h2>
+
+        <p class="mb-1"><strong>Description / Type:</strong> @Model.Description</p>
+        <p class="mb-1"><strong>Capacity:</strong> @Model.Capacity</p>
+        <p class="mb-0"><strong>Base price:</strong> @Model.BasePrice</p>
+    </div>
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="name" value="@Model.Name" />
+
+    <button type="submit" class="btn btn-danger">Delete resource</button>
+    <a asp-action="Details" asp-route-name="@Model.Name" class="btn btn-outline-secondary">View details</a>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

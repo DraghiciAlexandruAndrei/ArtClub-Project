@@ -1,0 +1,57 @@
+﻿@model ArtClub.Models.ViewModels.Resource.ResourceCreateViewModel
+
+@{
+    ViewData["Title"] = "Create resource";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1>Create resource</h1>
+        <p class="text-muted mb-0">Add a new room, hall, studio, or club space that can later be reserved for events.</p>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary">Back to resources</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Create" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="col-12">
+                <label asp-for="Name" class="form-label">Resource name</label>
+                <input asp-for="Name" class="form-control" placeholder="Example: Main Hall" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Type" class="form-label">Resource type</label>
+                <input asp-for="Type" class="form-control" placeholder="Example: Exhibition hall, studio, meeting room" />
+                <span asp-validation-for="Type" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Capacity" class="form-label">Capacity</label>
+                <input asp-for="Capacity" type="number" min="1" class="form-control" placeholder="Example: 50" />
+                <span asp-validation-for="Capacity" class="text-danger"></span>
+            </div>
+
+            <div class="col-12">
+                <div class="alert alert-info mb-0">
+                    The resource will be created with a default base price of 0. This can be changed later from the edit page.
+                </div>
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Save resource</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

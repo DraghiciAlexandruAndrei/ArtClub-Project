@@ -1,0 +1,123 @@
+﻿@model IEnumerable<ArtClub.Models.Entities.Payment>
+
+@{
+    ViewData["Title"] = "Financial Records";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="display-5 fw-bold">Payments</h1>
+        <p class="text-muted mb-0">Monitorizarea veniturilor și cheltuielilor clubului (REQ-5).</p>
+    </div>
+
+    <div class="btn-group">
+        <a asp-action="Dashboard" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-graph-up"></i> Dashboard
+        </a>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-lg"></i> Add payment
+        </a>
+    </div>
+</div>
+
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> @TempData["StatusMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model != null && Model.Any())
+{
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-3">Data</th>
+                        <th>Tip</th>
+                        <th>Sursă / Descriere</th>
+                        <th>Utilizator / Membru</th>
+                        <th>Sumă (Lei)</th>
+                        <th class="text-end pe-3">Acțiuni</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var payment in Model)
+                    {
+                        <tr>
+                            <td class="ps-3">
+                                <span class="fw-bold">@payment.Date.ToString("dd.MM.yyyy")</span>
+                                <br />
+                                <small class="text-muted">@payment.Date.ToString("HH:mm")</small>
+                            </td>
+
+                            <td>
+                                @if (payment.IsIncome)
+                                {
+                                    <span class="badge rounded-pill bg-success px-3 shadow-sm">
+                                        <i class="bi bi-arrow-up-right-circle me-1"></i> Venit
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill bg-danger px-3 shadow-sm">
+                                        <i class="bi bi-arrow-down-left-circle me-1"></i> Cheltuială
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @* Afișează descrierea generată de serviciu (ex: Upgrade Membership sau Încasare Eveniment) *@
+                                <div class="text-wrap" style="max-width: 280px;">
+                                    <span class="fw-semibold text-dark">
+                                        @(string.IsNullOrEmpty(payment.Description) ? "Fără specificații" : payment.Description)
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle p-2 me-2">
+                                        <i class="bi bi-person text-primary"></i>
+                                    </div>
+                                    <span class="fw-medium">@(payment.User?.UserName ?? "Sistem/Admin")</span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="fw-bold h6 @(payment.IsIncome ? "text-success" : "text-danger")">
+                                    @(payment.IsIncome ? "+" : "-") @payment.Amount.ToString("N2")
+                                </span>
+                            </td>
+
+                            <td class="text-end pe-3">
+                                <div class="btn-group shadow-sm">
+                                    <a asp-action="Details" asp-route-id="@payment.Id" class="btn btn-sm btn-white border" title="Detalii">
+                                        <i class="bi bi-info-circle text-primary"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@payment.Id" class="btn btn-sm btn-white border" title="Editează">
+                                        <i class="bi bi-pencil-square text-secondary"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@payment.Id" class="btn btn-sm btn-white border" title="Șterge">
+                                        <i class="bi bi-trash3 text-danger"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-light border-dashed text-center py-5 shadow-sm">
+        <i class="bi bi-wallet2 display-1 text-muted d-block mb-3"></i>
+        <h4 class="text-muted">Registrul financiar este gol</h4>
+        <p>Nu există nicio tranzacție procesată prin serviciul financiar.</p>
+    </div>
+}

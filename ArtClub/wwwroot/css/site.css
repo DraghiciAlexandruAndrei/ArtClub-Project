@@ -1,0 +1,87 @@
+/* ==========================================
+   STILURI DE BAZĂ ȘI RESPONSIVE (ORIGINALE)
+   ========================================== */
+html {
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    margin-bottom: 60px;
+}
+
+/* Structură Focus globală pentru accesibilitate */
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* Efecte pentru Form-Floating placeholders */
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+
+/* ==========================================
+   STILURI SPECIFICE BUTON REGISTER
+   ========================================== */
+.register-btn {
+    color: #ffffff !important; /* Text alb */
+    background-color: #0d6efd !important; /* Albastru Bootstrap */
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+}
+
+    .register-btn:hover,
+    .register-btn:active,
+    .register-btn:focus {
+        color: #ffffff !important; /* Textul RĂMÂNE alb */
+        background-color: #0b5ed7 !important; /* Un albastru puțin mai închis */
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
+    }
+
+
+/* ==========================================
+   STILURI NAVIGARE ARTCLUB (MUTATE DIN LAYOUT)
+   ========================================== */
+.navbar-brand {
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.nav-link {
+    font-weight: 500;
+}
+
+    .nav-link:hover {
+        color: #0d6efd !important;
+    }
+
+/* Rezolvarea pentru meniurile pe ecrane mici/mobile */
+@media (max-width: 991.98px) {
+    .navbar-nav.ms-auto {
+        margin-top: 1rem;
+        border-top: 1px solid #eee;
+        padding-top: 0.5rem;
+    }
+
+    .nav-item .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+}

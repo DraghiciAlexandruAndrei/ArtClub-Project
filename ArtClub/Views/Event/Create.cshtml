@@ -1,0 +1,136 @@
+﻿@model ArtClub.Models.ViewModels.Event.EventCreateViewModel
+@using Microsoft.AspNetCore.Identity
+@using ArtClub.Models.Entities
+@inject UserManager<User> UserManager
+
+@{
+    ViewData["Title"] = "Create event";
+
+    // MODIFICARE 1: Folosim UserManager în loc de Session pentru a verifica statusul
+    var user = await UserManager.GetUserAsync(User);
+    var isActive = user?.IsMembershipActive ?? false;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>Create New Event</h1>
+        <span class="badge @(isActive ? "bg-success" : "bg-warning text-dark")">
+            Status: @(isActive ? "Membru Activ (Tarif Redus)" : "Utilizator Standard (Tarif 400 lei/zi)")
+        </span>
+    </div>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-action="Create" method="post" class="row g-3 shadow-sm p-4 bg-light rounded">
+                @* MODIFICARE 2: Token-ul Anti-Forgery este generat automat de asp-action în interiorul form-ului,
+                   am șters linia @Html.AntiForgeryToken() de sus pentru a evita conflictele. *@
+                
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="col-12">
+                    <label asp-for="Title" class="form-label font-weight-bold">Titlu Eveniment</label>
+                    <input asp-for="Title" class="form-control" placeholder="Ex: Expoziție de Primăvară" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Description" class="form-label font-weight-bold">Descriere Detaliată</label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="StartDate" class="form-label font-weight-bold">Data Început</label>
+                    <input asp-for="StartDate" type="datetime-local" class="form-control" id="startDate" />
+                    <span asp-validation-for="StartDate" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="EndDate" class="form-label font-weight-bold">Data Sfârșit</label>
+                    <input asp-for="EndDate" type="datetime-local" class="form-control" id="endDate" />
+                    <span asp-validation-for="EndDate" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="ResourceName" class="form-label font-weight-bold text-primary">Alege Sala (300 lei/zi)</label>
+                    <select asp-for="ResourceName" asp-items="Model.AvailableResources" class="form-select border-primary">
+                        <option value="">-- Selectează locația --</option>
+                    </select>
+                    <span asp-validation-for="ResourceName" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label font-weight-bold text-primary">Piese de Artă (200 lei/buc/zi)</label>
+                    <select name="SelectedArtPieceIds" class="form-select border-primary" multiple size="3" id="artPieces">
+                        @if (ViewBag.ArtPiecesList != null)
+                        {
+                            foreach (var item in (IEnumerable<SelectListItem>)ViewBag.ArtPiecesList)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        }
+                    </select>
+                    <small class="text-muted">Ține apăsat Ctrl pentru selecție multiplă.</small>
+                </div>
+
+                <div class="col-12 mt-4">
+                    <div class="alert alert-secondary d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Estimare Costuri Automate:</strong>
+                            <span id="estimatedCost">0</span> lei
+                        </div>
+                        <button type="submit" class="btn btn-success btn-lg px-5">Salvează Evenimentul</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">Informații Tarifare (REQ-5)</div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li>🏢 <strong>Locație:</strong> 300 lei / zi</li>
+                        <li>🎨 <strong>Artă:</strong> 200 lei / piesă / zi</li>
+                        <hr />
+                        @if (!isActive)
+                        {
+                            <li class="text-danger">⚠️ <strong>Atenție:</strong> Neavând abonament activ, se poate aplica taxa de administrare de 400 lei/zi pentru rezervări externe.</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function calculatePreview() {
+            const startStr = document.getElementById('startDate').value;
+            const endStr = document.getElementById('endDate').value;
+            const artPiecesSelect = document.getElementById('artPieces');
+
+            if (!startStr || !endStr || !artPiecesSelect) return;
+
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+            const artCount = Array.from(artPiecesSelect.selectedOptions).length;
+
+            if (start && end && end > start) {
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+
+                const total = (diffDays * 300) + (diffDays * artCount * 200);
+                document.getElementById('estimatedCost').innerText = total;
+            }
+        }
+
+        document.querySelectorAll('#startDate, #endDate, #artPieces').forEach(el => {
+            el.addEventListener('change', calculatePreview);
+        });
+    </script>
+}

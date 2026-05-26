@@ -1,0 +1,30 @@
+@model IEnumerable<ArtClub.Models.ViewModels.ArtPiece.ArtPieceListViewModel>
+@{
+    ViewData["Title"] = "Popular Pieces";
+}
+
+<h1>Popular Pieces</h1>
+<p class="text-muted">Most viewed or most reserved art pieces in the selected period.</p>
+
+@if (Model?.Any() == true)
+{
+    <div class="row g-3">
+        @foreach (var piece in Model)
+        {
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">@piece.Title</h2>
+                        <p class="mb-1"><strong>Artist:</strong> @piece.ArtistName</p>
+                        <p class="mb-1"><strong>Style:</strong> @piece.Style</p>
+                        <a asp-action="Details" asp-route-id="@piece.Id" class="btn btn-sm btn-primary">View details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-secondary">No popular pieces to show yet.</div>
+}
